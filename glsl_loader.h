@@ -1,6 +1,12 @@
 #include <stdio.h>
-#include "GL/gl.h"
-#include "GL/glut.h"
+#ifdef __APPLE__
+	#include <GLUT/glut.h>
+	#include <OpenGL/gl.h>
+	#include <OpenGL/glu.h>
+#else
+	#include "GL/gl.h"
+	#include "GL/glut.h"
+#endif
 
 typedef struct glsl_blob{
 	/*

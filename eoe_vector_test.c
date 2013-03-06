@@ -1,8 +1,14 @@
 #include "eoe_vector.h"
 #include "glsl_loader.h"
 #include <stdio.h>
-#include "GL/gl.h"
-#include "GL/glut.h"
+#ifdef __APPLE__
+	#include <GLUT/glut.h>
+	#include <OpenGL/gl.h>
+	#include <OpenGL/glu.h>
+#else
+	#include "GL/gl.h"
+	#include "GL/glut.h"
+#endif
 
 int b_loader_shaders = 0;
 
@@ -41,8 +47,8 @@ void display(){
 		glsl_blob* blob = glsl_create_blob();
 		glsl_add_shader(GL_VERTEX_SHADER, blob, "one.vert");
 		printf("Loaded Shader:\n%s", blob->v_src);
-		glsl_add_shader(GL_FRAGMENT_SHADER, blob, "one.frag");
-		printf("Loaded Shader:\n%s", blob->f_src);
+		//glsl_add_shader(GL_FRAGMENT_SHADER, blob, "one.frag");
+		//printf("Loaded Shader:\n%s", blob->f_src);
 		glsl_create_program(blob);
 		printf("Shaders loaded.\n");
 		b_loader_shaders = 1;
