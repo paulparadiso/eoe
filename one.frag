@@ -1,11 +1,8 @@
-#version 120
+#version 330
 
-varying vec4 outputColor;
-varying vec4 gl_FragCoord;
+out vec4 outputColor;
 
 void main()
 {
-	float lerpValue = gl_FragCoord.y / 500.0;
-		
-	outputColor = mix(vec4(1.0, 1.0, 1.0, 1.0), vec4(0.2, 0.2, 0.2, 1.0), lerpValue);
+    outputColor = vec4(1.0f, 1.0f, 1.0f, 1.0f);
 }
