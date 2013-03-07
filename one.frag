@@ -1,8 +1,16 @@
 #version 330
 
-out vec4 outputColor;
+out vec4 output_color;
+
+uniform float time;
+uniform float frag_loop_duration;
+
+const vec4 first_color = vec4(0.0f, 1.0f, 1.0f, 1.0f);
+const vec4 second_color = vec4(0.0f, 1.0f, 0.0f, 1.0f);
 
 void main()
 {
-    outputColor = vec4(1.0f, 1.0f, 1.0f, 1.0f);
+    float curr_time = mod(time, frag_loop_duration);
+    float curr_lerp = curr_time / frag_loop_duration;
+    output_color = mix(first_color, second_color, curr_lerp);
 }
