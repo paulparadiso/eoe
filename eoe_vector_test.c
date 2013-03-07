@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
+#include <stdlib.h>
 #ifdef __APPLE__
 	#include <GLUT/glut.h>
 	#include <OpenGL/gl.h>
@@ -88,7 +89,7 @@ void compute_offsets(float *_offset){
 
 void display(){
 	compute_offsets(offsets);
-	printf("offsets = %f, %f\n", offsets[0], offsets[1]);
+	//printf("offsets = %f, %f\n", offsets[0], offsets[1]);
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 
@@ -119,8 +120,7 @@ void keyboard(unsigned char key, int x, int y)
 	switch (key)
 	{
 	  case 27:
-		  glutLeaveMainLoop();
-		  return;
+		  exit(0);
 	}
 }
 
