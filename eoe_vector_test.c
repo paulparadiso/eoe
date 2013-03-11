@@ -251,8 +251,7 @@ const float vertex_data[] = {
 	GREY_COLOR,
 };
 
-const GLshort index_data[] =
-{
+const GLshort index_data[] = {
 	0, 2, 1,
 	3, 2, 0,
 
@@ -470,8 +469,8 @@ int main(int argc, char **argv){
 	eoe_vec4d_print(&vec1unit);
 	glutInit(&argc,argv);
 	glutInitDisplayMode (GLUT_DOUBLE | GLUT_ALPHA | GLUT_DEPTH | GLUT_STENCIL); 
-	glutInitContextVersion (3, 3);
-	glutInitContextProfile(GLUT_CORE_PROFILE);
+	//glutInitContextVersion (3, 3);
+	//glutInitContextProfile(GLUT_CORE_PROFILE);
 	glutInitWindowSize(500,500);
 	glutInitWindowPosition(0,0);
 	glutCreateWindow(argv[0]); 
