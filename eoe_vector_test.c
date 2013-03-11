@@ -16,7 +16,6 @@
 
 #define ARRAY_COUNT( array ) (sizeof( array ) / (sizeof( array[0] ) * (sizeof( array ) != sizeof(void*) || sizeof( array[0] ) <= sizeof(void*))))
 
-
 int b_loader_shaders = 0;
 int matrix_size = 16;
 char vertex_shader[128];
@@ -32,7 +31,7 @@ float results[2];
 
 float perspective_matrix[16];
 
-float frustum_scale = 0.5f; 
+float frustum_scale = 1.0f; 
 float z_near = 0.5f; 
 float z_far = 3.0f;
 
@@ -283,9 +282,9 @@ void initialize_vertex_buffer()
 
 	glGenBuffers(1, &index_buffer_object);
 
-	glBindBuffer(GL_ARRAY_BUFFER, index_buffer_object);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(index_data), index_data, GL_STATIC_DRAW);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer_object);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(index_data), index_data, GL_STATIC_DRAW);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
 void init(){
@@ -318,8 +317,8 @@ void init(){
 		glsl_create_program(blob);
 		printf("Shaders loaded.\n");
 		b_loader_shaders = 1;
-		//offset_location = glGetUniformLocation(blob->program, "offset");
-		//matrix_location = glGetUniformLocation(blob->program, "perspectiveMatrix");
+		offset_location = glGetUniformLocation(blob->program, "offset");
+		matrix_location = glGetUniformLocation(blob->program, "perspective_matrix");
 		//printf("Uniform offset location set to %i\n", offset_location);
 		//printf("Uniform matrix set to %i\n", matrix_location);
 		
@@ -328,8 +327,6 @@ void init(){
 		glUseProgram(0);
 	}
 
-	printf("SHADERS INITTED\n");
-
 	initialize_vertex_buffer();
 
 	glGenVertexArrays(1, &vao1);
@@ -337,7 +334,7 @@ void init(){
     
     size_t color_data_offset = sizeof(float) * 3 * number_of_vertices;
     
-    glBindBuffer(GL_ARRAY_BUFFER, position_buffer_object);
+    glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_object);
     glEnableVertexAttribArray(0);
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
@@ -345,21 +342,15 @@ void init(){
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer_object);
     
     glBindVertexArray(0);
-    
-    glGenVertexArrays(1, &vao2);
-    glBindVertexArray(vao2);
-    
-    size_t pos_data_offset = sizeof(float) * 3 * (number_of_vertices/2);
-    color_data_offset += sizeof(float) * 4 * (number_of_vertices/2);
 
 	glEnable(GL_DEPTH_TEST);
-	
+	glDepthMask(GL_TRUE);
+	glDepthFunc(GL_LEQUAL);
+	glDepthRange(0.0f, 1.0f);
 	glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
     glFrontFace(GL_CW);
 
-    printf("INIT DONE\n");
-	
 }
 
 float loop_duration = 0.0;
@@ -385,30 +376,20 @@ void display(){
 	offsets[1] = 0.0;
 
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+	glClearDepth(1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	printf("Binding VAO1\n");
 
 	glUseProgram(blob->program);
 	glBindVertexArray(vao1);
 
-	printf("VAO1 bound\n");
-
-	offsets[2] = 0.0;
+	offsets[2] = -0.90;
 	glUniform3fv(offset_location, 1, offsets);
 
-	printf("drawing vao1\n");
+	glDrawElements(GL_TRIANGLES, ARRAY_COUNT(index_data), GL_UNSIGNED_SHORT, 0);
 
-	//glDrawElements(GL_TRIANGLES, ARRAY_COUNT(index_data), GL_UNSIGNED_SHORT, 0);
-
-	printf("vao1 drawn\n");
-
-	printf("Binding VAO2\n");
-
-	glBindVertexArray(vao2);
     offsets[2] = -1.0;
 	glUniform3fv(offset_location, 1, offsets);
-    glDrawElements(GL_TRIANGLES, ARRAY_COUNT(index_data), GL_UNSIGNED_SHORT, 0);
+    glDrawElementsBaseVertex(GL_TRIANGLES, ARRAY_COUNT(index_data), GL_UNSIGNED_SHORT, 0, number_of_vertices / 2);
 
     glBindVertexArray(0);
     glUseProgram(0);
@@ -425,6 +406,7 @@ void reshape (int w, int h)
 
 	glUseProgram(blob->program);
 	glUniformMatrix4fv(matrix_location, 1, GL_FALSE, perspective_matrix);
+	glUseProgram(0);
 
 	glViewport(0, 0, (GLsizei) w, (GLsizei) h);
 }
