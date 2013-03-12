@@ -16,24 +16,38 @@
 
 #define ARRAY_COUNT( array ) (sizeof( array ) / (sizeof( array[0] ) * (sizeof( array ) != sizeof(void*) || sizeof( array[0] ) <= sizeof(void*))))
 
+#define SCROLL_UP 3
+#define SCROLL_DOWN 4
+#define Z_MAX 0.6
+#define Z_MIN -1.75
+#define Z_DELTA 0.05
+
+void compute_offsets(float * _offsets);
+float calc_frustum_scale(float fov_deg);
+void construct_matrix(mat4 matrix);
+
 int b_loader_shaders = 0;
 int matrix_size = 16;
 char vertex_shader[128];
 char fragment_shader[128];
 
-void compute_offsets(float * _offsets);
-
-GLint offset_location = 2;
-GLint matrix_location;
+GLint clip_matrix_location = 2;
+GLint perspective_matrix_location;
 
 float offsets[3];
+float offsets2[3];
 float results[2];
 
-float perspective_matrix[16];
+mat4* perspective_matrix;
+mat4* camera_to_clip_matrix;
 
-float frustum_scale = 1.0f; 
 float z_near = 0.5f; 
-float z_far = 3.0f;
+float z_far = 6.0f;
+
+int b_depth_clamping_active = 0;
+
+int width = 500;
+int height = 500;
 
 const float vertex_positions[] = {
 	0.25f,  0.25f, 0.75f, 1.0f,
@@ -272,8 +286,15 @@ GLuint index_buffer_object;
 GLuint vao1;
 GLuint vao2;
 
-void initialize_vertex_buffer()
-{
+float calc_frustum_scale(float fov_deg){
+    const float deg_to_rad = 3.14159f * 2.0f / 360.0f;
+    float fov_rad = fov_deg * deg_to_rad;
+    return 1.0f / tan(fov_rad / 2.0f);
+}
+
+float frustum_scale; 
+
+void initialize_vertex_buffer(){
 	glGenBuffers(1, &vertex_buffer_object);
 	
 	glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_object);
@@ -301,12 +322,17 @@ void init(){
 	//glLoadIdentity ();
 	//glOrtho(-1.0, 1.0, -1.0, 1.0, -1.0, 1.0);
 
-	memset(perspective_matrix, 0, sizeof(float) * matrix_size);
-	perspective_matrix[0] = frustum_scale;
-	perspective_matrix[5] = frustum_scale;
-	perspective_matrix[10] = (z_far + z_near) / (z_near - z_far);
-	perspective_matrix[14] = (2 * z_far * z_near) / (z_near - z_far);
-	perspective_matrix[11] = -1.0f;
+	perspective_matrix = create_id_mat4();
+	camera_to_clip_matrix = create_id_mat4();
+	frustum_scale = calc_frustum_scale(45.0);
+	mat4_set_member(0,'x', frustum_scale, camera_to_clip_matrix);
+	mat4_set_member(1,'y', frustum_scale, camera_to_clip_matrix);
+	double factor = (z_far + z_near) / (z_near - z_far);
+	mat4_set_member(2,'z', factor, camera_to_clip_matrix);
+	mat4_set_member(2,'w', -1.0, camera_to_clip_matrix);
+	factor = (2 * z_far * z_near) / (z_near - z_far);
+	mat4_set_member(3,'z', factor, camera_to_clip_matrix);
+	print_matrix(camera_to_clip_matrix);
 
 	if(!b_loader_shaders){
 		blob = glsl_create_blob();
@@ -317,13 +343,13 @@ void init(){
 		glsl_create_program(blob);
 		printf("Shaders loaded.\n");
 		b_loader_shaders = 1;
-		offset_location = glGetUniformLocation(blob->program, "offset");
-		matrix_location = glGetUniformLocation(blob->program, "perspective_matrix");
+		clip_matrix_location = glGetUniformLocation(blob->program, "clip_matrix");
+		perspective_matrix_location = glGetUniformLocation(blob->program, "perspective_matrix");
 		//printf("Uniform offset location set to %i\n", offset_location);
 		//printf("Uniform matrix set to %i\n", matrix_location);
 		
 		glUseProgram(blob->program);
-		glUniformMatrix4fv(matrix_location, 1, GL_FALSE, perspective_matrix);
+		glUniformMatrix4fv(clip_matrix_location, 1, GL_FALSE, camera_to_clip_matrix);
 		glUseProgram(0);
 	}
 
@@ -346,16 +372,25 @@ void init(){
 	glEnable(GL_DEPTH_TEST);
 	glDepthMask(GL_TRUE);
 	glDepthFunc(GL_LEQUAL);
-	glDepthRange(0.0f, 1.0f);
+	glDepthRange(0.0f, 5.0f);
 	glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
     glFrontFace(GL_CW);
+	
+	//glPolygonMode ( GL_FRONT_AND_BACK, GL_LINE ) ;
 
+    offsets[0] = 0.0;
+    offsets[1] = 0.0;
+    offsets[2] = 0.0;
 }
 
 float loop_duration = 0.0;
 float scale = 0.0;
 float time = 0.0;
+
+void construct_matrix(mat4 matrix){
+
+}
 
 void compute_offsets(float *_offset){
 	loop_duration = 5.0f;
@@ -366,14 +401,23 @@ void compute_offsets(float *_offset){
 
 	_offset[0] = cosf(time * scale) * 0.5f;
 	_offset[1] = sinf(time * scale) * 0.5f;
+	_offset[2] = sinf(time * scale) * 0.5f;
 }
 
 void display(){
-	//compute_offsets(offsets);
+	compute_offsets(offsets2);
 	//printf("offsets = %f, %f\n", offsets[0], offsets[1]);
 
-	offsets[0] = 0.0;
-	offsets[1] = 0.0;
+	//offsets[0] = 0.0;
+	//offsets[1] = 0.0;
+
+	mat4_set_member(3, 'x', offsets[0], perspective_matrix);
+	mat4_set_member(3, 'y', offsets[1], perspective_matrix);
+	mat4_set_member(3, 'z', offsets[2], perspective_matrix);
+
+	mat4_set_member(3, 'x', offsets[0], camera_to_clip_matrix);
+	mat4_set_member(3, 'y', offsets[1], camera_to_clip_matrix);
+	mat4_set_member(3, 'z', offsets2[2], camera_to_clip_matrix);
 
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	glClearDepth(1.0f);
@@ -382,13 +426,15 @@ void display(){
 	glUseProgram(blob->program);
 	glBindVertexArray(vao1);
 
-	offsets[2] = -0.90;
-	glUniform3fv(offset_location, 1, offsets);
+	//offsets[2] = 0.8;
+	//glUniform3fv(offset_location, 1, offsets);
+	glUniformMatrix4fv(clip_matrix_location, 1, GL_FALSE, camera_to_clip_matrix);
+	glUniformMatrix4fv(perspective_matrix_location, 1, GL_FALSE, perspective_matrix);
 
 	glDrawElements(GL_TRIANGLES, ARRAY_COUNT(index_data), GL_UNSIGNED_SHORT, 0);
 
-    offsets[2] = -1.0;
-	glUniform3fv(offset_location, 1, offsets);
+    //float offsets2[3] = {0.0,0.0,0.8};
+	//glUniform3fv(offset_location, 1, offsets);
     glDrawElementsBaseVertex(GL_TRIANGLES, ARRAY_COUNT(index_data), GL_UNSIGNED_SHORT, 0, number_of_vertices / 2);
 
     glBindVertexArray(0);
@@ -401,11 +447,17 @@ void display(){
 
 void reshape (int w, int h)
 {
-	perspective_matrix[0] = frustum_scale / (w / (float)h);
-	perspective_matrix[5] = frustum_scale;
+	width = w;
+	height = h;
+	
+	mat4_set_member(0, 'x', frustum_scale / (w / (float)h), perspective_matrix);
+	mat4_set_member(1, 'y', frustum_scale, perspective_matrix);
+
+	//perspective_matrix[0] = frustum_scale / (w / (float)h);
+	//perspective_matrix[5] = frustum_scale;
 
 	glUseProgram(blob->program);
-	glUniformMatrix4fv(matrix_location, 1, GL_FALSE, perspective_matrix);
+	glUniformMatrix4fv(perspective_matrix_location, 1, GL_FALSE, perspective_matrix);
 	glUseProgram(0);
 
 	glViewport(0, 0, (GLsizei) w, (GLsizei) h);
@@ -415,17 +467,44 @@ void keyboard(unsigned char key, int x, int y)
 {
 	switch (key)
 	{
-	  case 27:
-		  exit(0);
-	}
+		case 27:
+			exit(0);
+		case 32:
+			if(b_depth_clamping_active){
+				glDisable(GL_DEPTH_CLAMP);
+			}
+			else{
+				glEnable(GL_DEPTH_CLAMP);
+        	}
+        	b_depth_clamping_active = !b_depth_clamping_active;
+        	break;
+        default:
+        	break;
+    }
 }
 
 void mouse(int button, int state, int x, int y){
 	//printf("Mouse:\n\t:%i\n\t:%i\n\t:%i\n\t:%i\n", button, state, x, y);
+	if(button == SCROLL_UP){
+		offsets[2] += Z_DELTA;
+		if(offsets[2] > Z_MAX){
+			offsets[2] = Z_MAX;
+		}
+		//printf("Z = %f\n", offsets[2]);
+	}
+	if(button == SCROLL_DOWN){
+		offsets[2] -= Z_DELTA;
+		if(offsets[2] < Z_MIN){
+			offsets[2] = Z_MIN;
+		}
+		//printf("Z = %f\n", offsets[2]);
+	}
 }
 
 void mouse_motion(int x, int y){
 	//printf("Mouse Movement:\n\t:%i\n\t%i\n", x, y);
+	offsets[0] = ((((float)x / (float)width) * 3.0) - 1.5);
+	offsets[1] = ((((float)y / (float)height) * 3.0) - 1.5) * -1.0;
 }
 
 int main(int argc, char **argv){

@@ -8,7 +8,7 @@ typedef struct eoe_vec4d{
 	double w;
 } eoe_vec4d;
 
-typedef double eoe_mat4d[16];
+typedef float mat4;
 
 /*
 Print a vector's values.
@@ -63,3 +63,39 @@ Cross product of two vectors.
 */
 
 void eoe_vec4d_cross(eoe_vec4d* res, eoe_vec4d* base, eoe_vec4d* m);
+
+/*
+Create a new matrix.
+*/
+
+mat4* create_mat4();
+
+/*
+Free a matrix.
+*/
+
+void free_matrix(mat4* matrix);
+
+/*
+Print matrix.
+*/
+
+void print_matrix(mat4* matrix);
+
+/*
+Create identity matrix.
+*/
+
+mat4* create_id_mat4();
+
+/*
+Set column to vector.
+*/
+
+void mat4_set_column(int column, mat4* matrix, eoe_vec4d* vec);
+
+/*
+Set member by column and letter.
+*/
+
+void mat4_set_member(int column, char dim, double val, mat4* matrix);
