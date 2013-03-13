@@ -62,7 +62,7 @@ mat4* create_mat4(){
 	return mat_ptr;
 }
 
-void free_matrix(mat4* matrix){
+void free_mat4(mat4* matrix){
 	free(matrix);
 }
 
@@ -107,4 +107,48 @@ void mat4_set_member(int column, char dim, double val, mat4 *matrix){
 	}
 	int index = column_conv + member;
 	matrix[index] = val;
+}
+
+float mat4_get_member(int column, char dim, mat4 *matrix){
+	int column_conv = column * 4;
+	int member = 0;
+	if(dim == 'x'){
+		member = 0;
+	}
+	if(dim == 'y'){
+		member = 1;
+	}
+	if(dim == 'z'){
+		member = 2;
+	}
+	if(dim == 'w'){
+		member = 3;
+	}
+	int index = column_conv + member;
+	return matrix[index];
+}
+
+void mat4_scale(float x, float y, float z, mat4* matrix){
+	mat4_set_member(0, 'x', mat4_get_member(0, 'x', matrix) * x, matrix);
+	mat4_set_member(1, 'y', mat4_get_member(1, 'y', matrix) * y, matrix);
+	mat4_set_member(2, 'z', mat4_get_member(2, 'z', matrix) * z, matrix);
+}
+
+mat4* create_rotation_mat4(float x, float y, float z, float angle){
+	float c = cos(DEGREES_TO_RADIANS(angle));
+	printf("c = %f\n", c);
+	float s = sin(DEGREES_TO_RADIANS(angle));
+	float i_c = 1.0 - c;
+	float i_s = 1.0 - s;
+	mat4* rot_mat = create_id_mat4();
+	mat4_set_member(0, 'x', (pow(x, 2) + (1.0 - pow(x, 2))) * c, rot_mat);
+	mat4_set_member(0, 'y', (i_c * x * y) + (z * s), rot_mat);
+	mat4_set_member(0, 'z', (i_c * x * z) + (y * s), rot_mat);
+	mat4_set_member(1, 'x', (i_c * x * y) - (z * s), rot_mat);
+	mat4_set_member(1, 'y', (pow(y, 2) + (1.0 - pow(y, 2))) * c, rot_mat);
+	mat4_set_member(1, 'z', (i_c * y * z) + (x * s), rot_mat);
+	mat4_set_member(2, 'x', (i_c * x * z) + (y * s), rot_mat);
+	mat4_set_member(2, 'y', (i_c * y * z) - (x * s), rot_mat);
+	mat4_set_member(2, 'z', (pow(z, 2) + (1.0 - pow(z, 2))) * c, rot_mat);
+	return rot_mat;
 }

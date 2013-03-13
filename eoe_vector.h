@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <math.h>
 
+#define DEGREES_TO_RADIANS(angle) ((angle) / 180.0 * M_PI)
+#define RADIANS_TO_DEGREES(radians) ((radians) * (180.0 / M_PI))
+
 typedef struct eoe_vec4d{
 	double x;
 	double y;
@@ -74,7 +77,7 @@ mat4* create_mat4();
 Free a matrix.
 */
 
-void free_matrix(mat4* matrix);
+void free_mat4(mat4* matrix);
 
 /*
 Print matrix.
@@ -99,3 +102,21 @@ Set member by column and letter.
 */
 
 void mat4_set_member(int column, char dim, double val, mat4* matrix);
+
+/*
+Get member by column and letter.
+*/
+
+float mat4_get_member(int column, char dim, mat4* matrix);
+
+/*
+Scale matrix.
+*/
+
+void mat4_scale(float x, float y, float z, mat4* matrix);
+
+/*
+Rotation matrix.
+*/
+
+mat4* create_rotation_mat4(float x, float y, float z, float angle);

@@ -19,8 +19,8 @@
 #define SCROLL_UP 3
 #define SCROLL_DOWN 4
 #define Z_MAX 0.6
-#define Z_MIN -1.75
-#define Z_DELTA 0.05
+#define Z_MIN -4.75
+#define Z_DELTA 0.01
 
 void compute_offsets(float * _offsets);
 float calc_frustum_scale(float fov_deg);
@@ -31,8 +31,9 @@ int matrix_size = 16;
 char vertex_shader[128];
 char fragment_shader[128];
 
-GLint clip_matrix_location = 2;
+GLint clip_matrix_location;
 GLint perspective_matrix_location;
+GLint rotation_matrix_location;
 
 float offsets[3];
 float offsets2[3];
@@ -286,6 +287,8 @@ GLuint index_buffer_object;
 GLuint vao1;
 GLuint vao2;
 
+float rot = 0.0;
+
 float calc_frustum_scale(float fov_deg){
     const float deg_to_rad = 3.14159f * 2.0f / 360.0f;
     float fov_rad = fov_deg * deg_to_rad;
@@ -332,7 +335,9 @@ void init(){
 	mat4_set_member(2,'w', -1.0, camera_to_clip_matrix);
 	factor = (2 * z_far * z_near) / (z_near - z_far);
 	mat4_set_member(3,'z', factor, camera_to_clip_matrix);
+	mat4_scale(0.1,0.1,0.1, camera_to_clip_matrix);
 	print_matrix(camera_to_clip_matrix);
+	
 
 	if(!b_loader_shaders){
 		blob = glsl_create_blob();
@@ -345,6 +350,7 @@ void init(){
 		b_loader_shaders = 1;
 		clip_matrix_location = glGetUniformLocation(blob->program, "clip_matrix");
 		perspective_matrix_location = glGetUniformLocation(blob->program, "perspective_matrix");
+		rotation_matrix_location = glGetUniformLocation(blob->program, "rot_matrix");
 		//printf("Uniform offset location set to %i\n", offset_location);
 		//printf("Uniform matrix set to %i\n", matrix_location);
 		
@@ -393,30 +399,33 @@ void construct_matrix(mat4 matrix){
 }
 
 void compute_offsets(float *_offset){
-	loop_duration = 5.0f;
+	loop_duration = 1.0f;
 	const float scale = 3.14159f * 2.0f / loop_duration;
 
 	float elapsed_time = glutGet(GLUT_ELAPSED_TIME) / 1000.0f;
 	time = fmodf(elapsed_time, loop_duration);
 
-	_offset[0] = cosf(time * scale) * 0.5f;
-	_offset[1] = sinf(time * scale) * 0.5f;
-	_offset[2] = sinf(time * scale) * 0.5f;
+	//_offset[0] = cosf(time * scale) * 0.5f;
+	//_offset[1] = sinf(time * scale) * 0.5f;
+	_offset[2] = sinf(time * scale) * -4.0f;
+	printf("offset z = %f\n", _offset[2]);
 }
 
 void display(){
-	compute_offsets(offsets2);
+	//compute_offsets(offsets);
 	//printf("offsets = %f, %f\n", offsets[0], offsets[1]);
 
 	//offsets[0] = 0.0;
 	//offsets[1] = 0.0;
 
+	/*
 	mat4_set_member(3, 'x', offsets[0], perspective_matrix);
 	mat4_set_member(3, 'y', offsets[1], perspective_matrix);
 	mat4_set_member(3, 'z', offsets[2], perspective_matrix);
+	*/
 
-	mat4_set_member(3, 'x', offsets[0], camera_to_clip_matrix);
-	mat4_set_member(3, 'y', offsets[1], camera_to_clip_matrix);
+	mat4_set_member(3, 'x', offsets2[0], camera_to_clip_matrix);
+	mat4_set_member(3, 'y', offsets2[1], camera_to_clip_matrix);
 	mat4_set_member(3, 'z', offsets2[2], camera_to_clip_matrix);
 
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
@@ -428,8 +437,20 @@ void display(){
 
 	//offsets[2] = 0.8;
 	//glUniform3fv(offset_location, 1, offsets);
+	
+	rot += 1.0;
+	if(rot > 360.0){
+		rot = 0.0;
+	}
+
+	mat4* rot_mat = create_rotation_mat4(1.0,0.0,0.0,291);
+	print_matrix(rot_mat);
+
 	glUniformMatrix4fv(clip_matrix_location, 1, GL_FALSE, camera_to_clip_matrix);
-	glUniformMatrix4fv(perspective_matrix_location, 1, GL_FALSE, perspective_matrix);
+	glUniformMatrix4fv(perspective_matrix_location, 1, GL_FALSE, rot_mat);
+	glUniformMatrix4fv(rotation_matrix_location, 1, GL_FALSE, rot_mat);
+
+	free_mat4(rot_mat);
 
 	glDrawElements(GL_TRIANGLES, ARRAY_COUNT(index_data), GL_UNSIGNED_SHORT, 0);
 
@@ -490,14 +511,14 @@ void mouse(int button, int state, int x, int y){
 		if(offsets[2] > Z_MAX){
 			offsets[2] = Z_MAX;
 		}
-		//printf("Z = %f\n", offsets[2]);
+		printf("Z = %f\n", offsets[2]);
 	}
 	if(button == SCROLL_DOWN){
 		offsets[2] -= Z_DELTA;
 		if(offsets[2] < Z_MIN){
 			offsets[2] = Z_MIN;
 		}
-		//printf("Z = %f\n", offsets[2]);
+		printf("Z = %f\n", offsets[2]);
 	}
 }
 
