@@ -7,6 +7,7 @@ smooth out vec4 the_color;
 
 uniform mat4 perspective_matrix;
 uniform mat4 clip_matrix;
+uniform vec4 offset;
 
 void main()
 {
@@ -15,3 +16,4 @@ void main()
 	gl_Position = clip_matrix * camera_pos;
 	the_color = color;
 }
+

@@ -136,19 +136,18 @@ void mat4_scale(float x, float y, float z, mat4* matrix){
 
 mat4* create_rotation_mat4(float x, float y, float z, float angle){
 	float c = cos(DEGREES_TO_RADIANS(angle));
-	//printf("c = %f\n", c);
+	//printf("c = %f from angle = %f\n", c, angle);
 	float s = sin(DEGREES_TO_RADIANS(angle));
-	float i_c = 1.0 - c;
-	float i_s = 1.0 - s;
+	float t = 1.0 - c;
 	mat4* rot_mat = create_id_mat4();
-	mat4_set_member(0, 'x', (pow(x, 2) + (1.0 - pow(x, 2))) * c, rot_mat);
-	mat4_set_member(0, 'y', (i_c * x * y) + (z * s), rot_mat);
-	mat4_set_member(0, 'z', (i_c * x * z) + (y * s), rot_mat);
-	mat4_set_member(1, 'x', (i_c * x * y) - (z * s), rot_mat);
-	mat4_set_member(1, 'y', (pow(y, 2) + (1.0 - pow(y, 2))) * c, rot_mat);
-	mat4_set_member(1, 'z', (i_c * y * z) + (x * s), rot_mat);
-	mat4_set_member(2, 'x', (i_c * x * z) + (y * s), rot_mat);
-	mat4_set_member(2, 'y', (i_c * y * z) - (x * s), rot_mat);
-	mat4_set_member(2, 'z', (pow(z, 2) + (1.0 - pow(z, 2))) * c, rot_mat);
+	mat4_set_member(0, 'x', t * pow(x, 2) + c, rot_mat);
+	mat4_set_member(0, 'y', (t * x * y) + (z * s), rot_mat);
+	mat4_set_member(0, 'z', (t * x * z) - (y * s), rot_mat);
+	mat4_set_member(1, 'x', (t * x * y) - (z * s), rot_mat);
+	mat4_set_member(1, 'y',  t * pow(y, 2) + c, rot_mat);
+	mat4_set_member(1, 'z', (t * y * z) + (x * s), rot_mat);
+	mat4_set_member(2, 'x', (t * x * z) + (y * s), rot_mat);
+	mat4_set_member(2, 'y', (t * y * z) - (x * s), rot_mat);
+	mat4_set_member(2, 'z',  t * pow(z, 2) + c, rot_mat);
 	return rot_mat;
 }

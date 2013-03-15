@@ -9,8 +9,11 @@
 	#include <OpenGL/gl.h>
 	#include <OpenGL/glu.h>
 #else
+	#define GL_GLEXT_PROTOTYPES
 	#include "GL/gl.h"
 	#include "GL/glut.h"
+	#include "GL/glu.h"
+	#include "GL/freeglut.h"
 	#include "GL/freeglut_ext.h"
 #endif
 
@@ -18,9 +21,9 @@
 
 #define SCROLL_UP 3
 #define SCROLL_DOWN 4
-#define Z_MAX 0.6
-#define Z_MIN -4.75
-#define Z_DELTA 0.01
+#define Z_MAX 10.0
+#define Z_MIN -10.0
+#define Z_DELTA 0.1
 
 void compute_offsets(float * _offsets);
 float calc_frustum_scale(float fov_deg);
@@ -34,18 +37,19 @@ char fragment_shader[128];
 GLint clip_matrix_location;
 GLint perspective_matrix_location;
 GLint rotation_matrix_location;
+GLint offset_location;
 
-float offsets[3];
+float offsets[4];
 float offsets2[3];
 float results[2];
 
 mat4* perspective_matrix;
 mat4* camera_to_clip_matrix;
 
-float z_near = 0.5f; 
+float z_near = 1.0f; 
 float z_far = 6.0f;
 
-int b_depth_clamping_active = 0;
+int b_depth_clamping_active = 1;
 
 int width = 500;
 int height = 500;
@@ -151,7 +155,7 @@ const float vertex_positions[] = {
 	0.0f, 1.0f, 1.0f, 1.0f,
 };
 
-const int number_of_vertices = 36;
+const int number_of_vertices = 8;
 
 #define RIGHT_EXTENT 0.8f
 #define LEFT_EXTENT -RIGHT_EXTENT
@@ -168,115 +172,37 @@ const int number_of_vertices = 36;
 #define BROWN_COLOR 0.5f, 0.5f, 0.0f, 1.0f
 
 const float vertex_data[] = {
-	//Object 1 positions
-	LEFT_EXTENT,	TOP_EXTENT,		REAR_EXTENT,
-	LEFT_EXTENT,	MIDDLE_EXTENT,	FRONT_EXTENT,
-	RIGHT_EXTENT,	MIDDLE_EXTENT,	FRONT_EXTENT,
-	RIGHT_EXTENT,	TOP_EXTENT,		REAR_EXTENT,
+	+1.0f, +1.0f, +1.0f,
+	-1.0f, -1.0f, +1.0f,
+	-1.0f, +1.0f, -1.0f,
+	+1.0f, -1.0f, -1.0f,
 
-	LEFT_EXTENT,	BOTTOM_EXTENT,	REAR_EXTENT,
-	LEFT_EXTENT,	MIDDLE_EXTENT,	FRONT_EXTENT,
-	RIGHT_EXTENT,	MIDDLE_EXTENT,	FRONT_EXTENT,
-	RIGHT_EXTENT,	BOTTOM_EXTENT,	REAR_EXTENT,
-
-	LEFT_EXTENT,	TOP_EXTENT,		REAR_EXTENT,
-	LEFT_EXTENT,	MIDDLE_EXTENT,	FRONT_EXTENT,
-	LEFT_EXTENT,	BOTTOM_EXTENT,	REAR_EXTENT,
-
-	RIGHT_EXTENT,	TOP_EXTENT,		REAR_EXTENT,
-	RIGHT_EXTENT,	MIDDLE_EXTENT,	FRONT_EXTENT,
-	RIGHT_EXTENT,	BOTTOM_EXTENT,	REAR_EXTENT,
-
-	LEFT_EXTENT,	BOTTOM_EXTENT,	REAR_EXTENT,
-	LEFT_EXTENT,	TOP_EXTENT,		REAR_EXTENT,
-	RIGHT_EXTENT,	TOP_EXTENT,		REAR_EXTENT,
-	RIGHT_EXTENT,	BOTTOM_EXTENT,	REAR_EXTENT,
-
-	//Object 2 positions
-	TOP_EXTENT,		RIGHT_EXTENT,	REAR_EXTENT,
-	MIDDLE_EXTENT,	RIGHT_EXTENT,	FRONT_EXTENT,
-	MIDDLE_EXTENT,	LEFT_EXTENT,	FRONT_EXTENT,
-	TOP_EXTENT,		LEFT_EXTENT,	REAR_EXTENT,
-
-	BOTTOM_EXTENT,	RIGHT_EXTENT,	REAR_EXTENT,
-	MIDDLE_EXTENT,	RIGHT_EXTENT,	FRONT_EXTENT,
-	MIDDLE_EXTENT,	LEFT_EXTENT,	FRONT_EXTENT,
-	BOTTOM_EXTENT,	LEFT_EXTENT,	REAR_EXTENT,
-
-	TOP_EXTENT,		RIGHT_EXTENT,	REAR_EXTENT,
-	MIDDLE_EXTENT,	RIGHT_EXTENT,	FRONT_EXTENT,
-	BOTTOM_EXTENT,	RIGHT_EXTENT,	REAR_EXTENT,
-					
-	TOP_EXTENT,		LEFT_EXTENT,	REAR_EXTENT,
-	MIDDLE_EXTENT,	LEFT_EXTENT,	FRONT_EXTENT,
-	BOTTOM_EXTENT,	LEFT_EXTENT,	REAR_EXTENT,
-					
-	BOTTOM_EXTENT,	RIGHT_EXTENT,	REAR_EXTENT,
-	TOP_EXTENT,		RIGHT_EXTENT,	REAR_EXTENT,
-	TOP_EXTENT,		LEFT_EXTENT,	REAR_EXTENT,
-	BOTTOM_EXTENT,	LEFT_EXTENT,	REAR_EXTENT,
-
-	//Object 1 colors
-	GREEN_COLOR,
-	GREEN_COLOR,
-	GREEN_COLOR,
-	GREEN_COLOR,
-
-	BLUE_COLOR,
-	BLUE_COLOR,
-	BLUE_COLOR,
-	BLUE_COLOR,
-
-	RED_COLOR,
-	RED_COLOR,
-	RED_COLOR,
-
-	GREY_COLOR,
-	GREY_COLOR,
-	GREY_COLOR,
-
-	BROWN_COLOR,
-	BROWN_COLOR,
-	BROWN_COLOR,
-	BROWN_COLOR,
-
-	//Object 2 colors
-	RED_COLOR,
-	RED_COLOR,
-	RED_COLOR,
-	RED_COLOR,
-
-	BROWN_COLOR,
-	BROWN_COLOR,
-	BROWN_COLOR,
-	BROWN_COLOR,
-
-	BLUE_COLOR,
-	BLUE_COLOR,
-	BLUE_COLOR,
+	-1.0f, -1.0f, -1.0f,
+	+1.0f, +1.0f, -1.0f,
+	+1.0f, -1.0f, +1.0f,
+	-1.0f, +1.0f, +1.0f,
 
 	GREEN_COLOR,
-	GREEN_COLOR,
-	GREEN_COLOR,
+	BLUE_COLOR,
+	RED_COLOR,
+	BROWN_COLOR,
 
-	GREY_COLOR,
-	GREY_COLOR,
-	GREY_COLOR,
-	GREY_COLOR,
+	GREEN_COLOR,
+	BLUE_COLOR,
+	RED_COLOR,
+	BROWN_COLOR,
 };
 
 const GLshort index_data[] = {
-	0, 2, 1,
-	3, 2, 0,
+	0, 1, 2,
+	1, 0, 3,
+	2, 3, 0,
+	3, 2, 1,
 
-	4, 5, 6,
-	6, 7, 4,
-
-	8, 9, 10,
-	11, 13, 12,
-
-	14, 16, 15,
-	17, 16, 14,
+	5, 4, 6,
+	4, 5, 7,
+	7, 6, 4,
+	6, 7, 5,
 };
 
 glsl_blob* blob;
@@ -327,7 +253,7 @@ void init(){
 
 	perspective_matrix = create_id_mat4();
 	camera_to_clip_matrix = create_id_mat4();
-	frustum_scale = calc_frustum_scale(45.0);
+	frustum_scale = calc_frustum_scale(30.0);
 	mat4_set_member(0,'x', frustum_scale, camera_to_clip_matrix);
 	mat4_set_member(1,'y', frustum_scale, camera_to_clip_matrix);
 	double factor = (z_far + z_near) / (z_near - z_far);
@@ -337,7 +263,6 @@ void init(){
 	mat4_set_member(3,'z', factor, camera_to_clip_matrix);
 	mat4_scale(0.1,0.1,0.1, camera_to_clip_matrix);
 	print_matrix(camera_to_clip_matrix);
-	
 
 	if(!b_loader_shaders){
 		blob = glsl_create_blob();
@@ -351,6 +276,7 @@ void init(){
 		clip_matrix_location = glGetUniformLocation(blob->program, "clip_matrix");
 		perspective_matrix_location = glGetUniformLocation(blob->program, "perspective_matrix");
 		rotation_matrix_location = glGetUniformLocation(blob->program, "rot_matrix");
+		offset_location = glGetUniformLocation(blob->program, "offset");
 		//printf("Uniform offset location set to %i\n", offset_location);
 		//printf("Uniform matrix set to %i\n", matrix_location);
 		
@@ -384,9 +310,12 @@ void init(){
 	*/
 	
 	glEnable(GL_DEPTH_TEST);
+	if(b_depth_clamping_active){
+		glEnable(GL_DEPTH_CLAMP);
+	}
 	glDepthMask(GL_TRUE);
 	glDepthFunc(GL_LEQUAL);
-	glDepthRange(0.0f, 5.0f);
+	glDepthRange(0.0f, 1.0f);
 	glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
     glFrontFace(GL_CW);
@@ -396,6 +325,7 @@ void init(){
     offsets[0] = 0.0;
     offsets[1] = 0.0;
     offsets[2] = 0.0;
+    offsets[3] = 1.0;
 }
 
 float loop_duration = 0.0;
@@ -432,9 +362,11 @@ void display(){
 	mat4_set_member(3, 'z', offsets[2], perspective_matrix);
 	*/
 
+	/*
 	mat4_set_member(3, 'x', offsets2[0], camera_to_clip_matrix);
 	mat4_set_member(3, 'y', offsets2[1], camera_to_clip_matrix);
 	mat4_set_member(3, 'z', offsets2[2], camera_to_clip_matrix);
+	*/
 
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	glClearDepth(1.0f);
@@ -451,20 +383,26 @@ void display(){
 	}
 
 	mat4* rot_mat = create_rotation_mat4(1.0,0.0,0.0,rot);
+	//mat4* rot_mat = create_id_mat4();
+	eoe_vec4d vec1 = {.x = offsets[0], 
+				   	  .y = offsets[1], 
+				   	  .z = offsets[2],
+				   	  .w = offsets[3]};
+	mat4_set_column(3, rot_mat, &vec1);
 	//print_matrix(rot_mat);
 
 	//glUniformMatrix4fv(clip_matrix_location, 1, GL_FALSE, camera_to_clip_matrix);
-	//glUniformMatrix4fv(perspective_matrix_location, 1, GL_FALSE, rot_mat);
+	glUniformMatrix4fv(perspective_matrix_location, 1, GL_FALSE, rot_mat);
+	//glUniform4fv(offset_location, 1, offsets);
 	//glUniformMatrix4fv(rotation_matrix_location, 1, GL_FALSE, rot_mat);
 
 	free_mat4(rot_mat);
-
 
 	glDrawElements(GL_TRIANGLES, ARRAY_COUNT(index_data), GL_UNSIGNED_SHORT, 0);
 
     //float offsets2[3] = {0.0,0.0,0.8};
 	//glUniform3fv(offset_location, 1, offsets);
-    glDrawElementsBaseVertex(GL_TRIANGLES, ARRAY_COUNT(index_data), GL_UNSIGNED_SHORT, 0, number_of_vertices / 2);
+    //glDrawElementsBaseVertex(GL_TRIANGLES, ARRAY_COUNT(index_data), GL_UNSIGNED_SHORT, 0, number_of_vertices / 2);
 
     glBindVertexArray(0);
     glUseProgram(0);
@@ -532,8 +470,8 @@ void mouse(int button, int state, int x, int y){
 
 void mouse_motion(int x, int y){
 	//printf("Mouse Movement:\n\t:%i\n\t%i\n", x, y);
-	offsets[0] = ((((float)x / (float)width) * 3.0) - 1.5);
-	offsets[1] = ((((float)y / (float)height) * 3.0) - 1.5) * -1.0;
+	offsets[0] = ((((float)x / (float)width) * 10.0) - 5.0);
+	offsets[1] = ((((float)y / (float)height) * 10.0) - 5.0) * -1.0;
 }
 
 int main(int argc, char **argv){
@@ -558,7 +496,11 @@ int main(int argc, char **argv){
 	printf("Vec1 has a magnitude of %f\n", mag);
 	eoe_vec4d_print(&vec1unit);
 	glutInit(&argc,argv);
-	glutInitDisplayMode (GLUT_3_2_CORE_PROFILE | GLUT_DOUBLE | GLUT_ALPHA | GLUT_DEPTH | GLUT_STENCIL); 
+	#ifdef __APPLE__
+		glutInitDisplayMode (GLUT_3_2_CORE_PROFILE | GLUT_DOUBLE | GLUT_ALPHA | GLUT_DEPTH | GLUT_STENCIL); 
+	#else
+		glutInitDisplayMode (GLUT_DOUBLE | GLUT_ALPHA | GLUT_DEPTH | GLUT_STENCIL);
+	#endif
 	//glutInitContextProfile(GLUT_CORE_PROFILE);
 	glutInitWindowSize(500,500);
 	glutInitWindowPosition(0,0);
