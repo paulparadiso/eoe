@@ -1,4 +1,4 @@
-#version 120
+#version 330
 
 attribute vec4 position;
 attribute vec4 color;

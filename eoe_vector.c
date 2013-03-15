@@ -136,7 +136,7 @@ void mat4_scale(float x, float y, float z, mat4* matrix){
 
 mat4* create_rotation_mat4(float x, float y, float z, float angle){
 	float c = cos(DEGREES_TO_RADIANS(angle));
-	printf("c = %f\n", c);
+	//printf("c = %f\n", c);
 	float s = sin(DEGREES_TO_RADIANS(angle));
 	float i_c = 1.0 - c;
 	float i_s = 1.0 - s;

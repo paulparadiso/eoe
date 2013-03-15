@@ -359,9 +359,12 @@ void init(){
 		glUseProgram(0);
 	}
 
+	printf("OpenGL version - %s\n", glGetString(GL_VERSION));
+
 	initialize_vertex_buffer();
 
 	glGenVertexArrays(1, &vao1);
+
 	glBindVertexArray(vao1);
     
     size_t color_data_offset = sizeof(float) * 3 * number_of_vertices;
@@ -372,9 +375,14 @@ void init(){
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
     glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 0, (void*)color_data_offset);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer_object);
-    
+
     glBindVertexArray(0);
 
+    /*
+    int e = glGetError();
+	printf("GL error - %s\n", gluErrorString(e));
+	*/
+	
 	glEnable(GL_DEPTH_TEST);
 	glDepthMask(GL_TRUE);
 	glDepthFunc(GL_LEQUAL);
@@ -434,7 +442,6 @@ void display(){
 
 	glUseProgram(blob->program);
 	glBindVertexArray(vao1);
-
 	//offsets[2] = 0.8;
 	//glUniform3fv(offset_location, 1, offsets);
 	
@@ -443,14 +450,15 @@ void display(){
 		rot = 0.0;
 	}
 
-	mat4* rot_mat = create_rotation_mat4(1.0,0.0,0.0,291);
-	print_matrix(rot_mat);
+	mat4* rot_mat = create_rotation_mat4(1.0,0.0,0.0,rot);
+	//print_matrix(rot_mat);
 
-	glUniformMatrix4fv(clip_matrix_location, 1, GL_FALSE, camera_to_clip_matrix);
-	glUniformMatrix4fv(perspective_matrix_location, 1, GL_FALSE, rot_mat);
-	glUniformMatrix4fv(rotation_matrix_location, 1, GL_FALSE, rot_mat);
+	//glUniformMatrix4fv(clip_matrix_location, 1, GL_FALSE, camera_to_clip_matrix);
+	//glUniformMatrix4fv(perspective_matrix_location, 1, GL_FALSE, rot_mat);
+	//glUniformMatrix4fv(rotation_matrix_location, 1, GL_FALSE, rot_mat);
 
 	free_mat4(rot_mat);
+
 
 	glDrawElements(GL_TRIANGLES, ARRAY_COUNT(index_data), GL_UNSIGNED_SHORT, 0);
 
@@ -550,8 +558,7 @@ int main(int argc, char **argv){
 	printf("Vec1 has a magnitude of %f\n", mag);
 	eoe_vec4d_print(&vec1unit);
 	glutInit(&argc,argv);
-	glutInitDisplayMode (GLUT_DOUBLE | GLUT_ALPHA | GLUT_DEPTH | GLUT_STENCIL); 
-	//glutInitContextVersion (3, 3);
+	glutInitDisplayMode (GLUT_3_2_CORE_PROFILE | GLUT_DOUBLE | GLUT_ALPHA | GLUT_DEPTH | GLUT_STENCIL); 
 	//glutInitContextProfile(GLUT_CORE_PROFILE);
 	glutInitWindowSize(500,500);
 	glutInitWindowPosition(0,0);
