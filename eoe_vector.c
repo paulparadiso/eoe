@@ -34,9 +34,9 @@ void eoe_vec4d_div(eoe_vec4d *res, eoe_vec4d *base, double m){
 
 double eoe_vec4d_mag(eoe_vec4d * base){
 	double squares = pow(base->x, 2) + pow(base->y, 2) + pow(base->z, 2) + pow(base->w, 2);
-	printf("squares = %f\n", squares);
+	//printf("squares = %f\n", squares);
 	double root = sqrt(squares);
-	printf("root = %f\n", root);
+	//printf("root = %f\n", root);
 	return root;
 }
 

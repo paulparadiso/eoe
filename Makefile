@@ -7,13 +7,13 @@ CFLAGS = $(COMPILERFLAGS)
 
 OBJECTS = eoe_vector.o glsl_loader.o node.o model_loader.o
 
-LIBS = -lGL -lglut -lm 
+LIBS = -lGL -lglut -lm -lassimp
 
-INCLUDES = -I/usr/include/GL 
+INCLUDES = -I/usr/include/GL
 
 osx: vec_OSX glsl_OSX node_OSX model_loader_OSX app_OSX 
 
-linux: vec_LINUX glsl_LINUX node_LINUX app_LINUX
+linux: vec_LINUX glsl_LINUX node_LINUX model_loader_LINUX app_LINUX
 
 clean:
 	rm $(OBJECTS) vec_test
@@ -41,6 +41,9 @@ glsl_LINUX:
 
 node_LINUX:
 	$(CC) $(CFLAGS) $(LIBS) -c node.c
+
+model_loader_LINUX:
+	$(CC) $(CFLAGS) $(LIBS) -I./assimp/include/ -c model_loader.c
 
 app_LINUX:
 	$(CC) $(CFLAGS) $(LIBS) $(OBJECTS) $(INCLUDES) eoe_vector_test.c -o vec_test

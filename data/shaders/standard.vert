@@ -14,6 +14,6 @@ void main()
 	vec4 camera_pos = perspective_matrix * position;
 
 	gl_Position = clip_matrix * camera_pos;
-	the_color = color;
+	the_color = vec4(1.0,1.0,1.0,1.0);
 }
 

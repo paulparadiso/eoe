@@ -24,8 +24,8 @@
 #define SCROLL_UP 3
 #define SCROLL_DOWN 4
 #define Z_MAX 10.0
-#define Z_MIN -10.0
-#define Z_DELTA 0.1
+#define Z_MIN -200.0
+#define Z_DELTA 1.0
 
 void compute_offsets(float * _offsets);
 float calc_frustum_scale(float fov_deg);
@@ -372,6 +372,8 @@ void display(){
 	mat4_set_member(3, 'z', offsets2[2], camera_to_clip_matrix);
 	*/
 
+	glBindVertexArray(vao1);
+
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	glClearDepth(1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -386,7 +388,7 @@ void display(){
 		rot = 0.0;
 	}
 
-	mat4* rot_mat = create_rotation_mat4(1.0,0.0,0.0,rot);
+	mat4* rot_mat = create_rotation_mat4(1.0,0.0,0.0,0.0);
 	//mat4* rot_mat = create_id_mat4();
 	eoe_vec4d vec1 = {.x = offsets[0], 
 				   	  .y = offsets[1], 
@@ -399,6 +401,12 @@ void display(){
 	glUniformMatrix4fv(perspective_matrix_location, 1, GL_FALSE, rot_mat);
 	//glUniform4fv(offset_location, 1, offsets);
 	//glUniformMatrix4fv(rotation_matrix_location, 1, GL_FALSE, rot_mat);
+
+	node3d_draw(goblin);
+	GLenum gl_error = glGetError();
+	if(gl_error > 0){
+		printf("GL error = %i\n", gl_error);
+	}
 
 	free_mat4(rot_mat);
 
@@ -501,6 +509,7 @@ int main(int argc, char **argv){
 	double mag = eoe_vec4d_mag(&vec1);
 	printf("Vec1 has a magnitude of %f\n", mag);
 	eoe_vec4d_print(&vec1unit);
+
 	glutInit(&argc,argv);
 	#ifdef __APPLE__
 		glutInitDisplayMode (GLUT_3_2_CORE_PROFILE | GLUT_DOUBLE | GLUT_ALPHA | GLUT_DEPTH | GLUT_STENCIL); 
@@ -520,6 +529,7 @@ int main(int argc, char **argv){
 	glutPassiveMotionFunc(mouse_motion);
 
 	goblin = load_model("data/models/goblin_obj.obj");
+
 	/*
 
 	glewInit();
