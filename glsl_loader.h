@@ -1,3 +1,6 @@
+#ifndef __GLSL_LOADER_H__
+#define __GLSL_LOADER_H__
+
 #include <stdio.h>
 #ifdef __APPLE__
 	#include <GLUT/glut.h>
@@ -78,3 +81,5 @@ Remove any shader currently loaded.
 */
 
 void glsl_unlink_program();
+
+#endif

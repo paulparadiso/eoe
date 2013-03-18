@@ -1,5 +1,7 @@
 #include "eoe_vector.h"
 #include "glsl_loader.h"
+#include "node.h"
+#include "model_loader.h"
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
@@ -53,6 +55,8 @@ int b_depth_clamping_active = 1;
 
 int width = 500;
 int height = 500;
+
+node3d* goblin;
 
 const float vertex_positions[] = {
 	0.25f,  0.25f, 0.75f, 1.0f,
@@ -373,7 +377,7 @@ void display(){
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glUseProgram(blob->program);
-	glBindVertexArray(vao1);
+		
 	//offsets[2] = 0.8;
 	//glUniform3fv(offset_location, 1, offsets);
 	
@@ -398,7 +402,9 @@ void display(){
 
 	free_mat4(rot_mat);
 
-	glDrawElements(GL_TRIANGLES, ARRAY_COUNT(index_data), GL_UNSIGNED_SHORT, 0);
+	//glDrawElements(GL_TRIANGLES, ARRAY_COUNT(index_data), GL_UNSIGNED_SHORT, 0);
+
+	//node3d_draw(goblin);
 
     //float offsets2[3] = {0.0,0.0,0.8};
 	//glUniform3fv(offset_location, 1, offsets);
@@ -513,6 +519,7 @@ int main(int argc, char **argv){
 	glutMotionFunc(mouse_motion);
 	glutPassiveMotionFunc(mouse_motion);
 
+	goblin = load_model("data/models/goblin_obj.obj");
 	/*
 
 	glewInit();

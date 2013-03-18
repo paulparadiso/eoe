@@ -1,3 +1,6 @@
+#ifndef __EOE_VECTOR_H__
+#define __EOE_VECTOR_H__
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -126,3 +129,5 @@ Rotation matrix.
 */
 
 mat4* create_rotation_mat4(float x, float y, float z, float angle);
+
+#endif

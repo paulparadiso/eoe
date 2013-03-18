@@ -1,0 +1,3 @@
+/Users/pp/projects/eoe/code/assimp--3.0.1270-source-only/code/CMakeFiles/assimp.dir
+/Users/pp/projects/eoe/code/assimp--3.0.1270-source-only/tools/assimp_cmd/CMakeFiles/assimp_cmd.dir
+/Users/pp/projects/eoe/code/assimp--3.0.1270-source-only/CMakeFiles/uninstall.dir

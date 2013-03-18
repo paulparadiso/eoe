@@ -5,13 +5,13 @@ COMPILERFLAGS = -Wall -g -std=c99 -pedantic
 CC = gcc
 CFLAGS = $(COMPILERFLAGS)
 
-OBJECTS = eoe_vector.o glsl_loader.o node.o
+OBJECTS = eoe_vector.o glsl_loader.o node.o model_loader.o
 
 LIBS = -lGL -lglut -lm 
 
 INCLUDES = -I/usr/include/GL 
 
-osx: vec_OSX glsl_OSX node_OSX app_OSX 
+osx: vec_OSX glsl_OSX node_OSX model_loader_OSX app_OSX 
 
 linux: vec_LINUX glsl_LINUX node_LINUX app_LINUX
 
@@ -27,8 +27,11 @@ glsl_OSX:
 node_OSX:
 	$(CC) $(CFLAGS) $(FRAMEWORK) -c node.c
 
+model_loader_OSX:
+	$(CC) $(CFLAGS) $(FRAMEWORK) -I./assimp/include/ -lassimp -c model_loader.c
+
 app_OSX:
-	$(CC) $(CFLAGS) $(FRAMEWORK) $(OBJECTS) eoe_vector_test.c -o vec_test
+	$(CC) $(CFLAGS) $(FRAMEWORK) $(OBJECTS) -I./assimp/include/ eoe_vector_test.c -o vec_test -lassimp
 
 vec_LINUX:
 	$(CC) $(CFLAGS) $(LIBS) -c eoe_vector.c 
