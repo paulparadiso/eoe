@@ -21,12 +21,17 @@ Struct to hold model data.
 */
 
 typedef struct mesh_data{
-	float* vertex_data;
+	GLfloat* vertex_data;
+	GLushort* index_data;
 	GLuint vertex_buffer_object;
+	GLuint index_buffer_object;
 	GLuint vao;
+	GLenum draw_mode;
+	int b_indexed_draw;
 	unsigned int* mesh_offsets;
 	unsigned int num_meshes;
 	unsigned int num_vertices;
+	unsigned int num_indeces;
 } mesh_data;
 
 /*

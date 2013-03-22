@@ -58,6 +58,8 @@ int height = 500;
 
 node3d* goblin;
 
+node3d* cube;
+
 const float vertex_positions[] = {
 	0.25f,  0.25f, 0.75f, 1.0f,
 	 0.25f, -0.25f, 0.75f, 1.0f,
@@ -159,6 +161,49 @@ const float vertex_positions[] = {
 	0.0f, 1.0f, 1.0f, 1.0f,
 };
 
+const GLfloat cube_vertex_positions[] = {
+	-0.5,  0.5, -0.5, // vertex
+	 0.5,  0.5, -0.5, // vertex
+	 0.5,  0.5,  0.5, // vertex
+	-0.5,  0.5,  0.5, // vertex
+	-0.5, -0.5, -0.5, // vertex
+	 0.5, -0.5, -0.5, // vertex
+	 0.5, -0.5,  0.5, // vertex
+	-0.5, -0.5,  0.5, // vertex
+	 1.0,  1.0,  0.5,  // color
+	 1.0,  0.5,  1.0, // color
+ 	 0.5,  0.5,  1.0, // color
+ 	 0.5,  0.5,  0.5, // color 
+ 	 1.0,  0.5,  0.5, // color
+ 	 1.0,  1.0,  1.0, // color
+   	 0.5,  1.0,  1.0, // color
+   	 0.5,  1.0,  0.5  // color
+};
+
+const GLushort cube_index_data[] = {
+	0, 1, 2,
+	2, 3, 0,
+	0, 3, 4,
+	4, 7, 3,
+	3, 2, 7,
+	7, 6, 2,
+	2, 1, 6,
+	6, 5, 2,
+	1, 0, 4,
+	4, 5, 1,
+	4, 5, 6,
+	6, 7, 4
+};
+
+const GLushort cube_index_data2[] = {
+	0, 1, 2,
+	2, 3, 0,
+	0, 3, 4,
+	4, 7, 3,
+};
+
+int nci = 12;
+
 const int number_of_vertices = 8;
 
 #define RIGHT_EXTENT 0.8f
@@ -197,7 +242,7 @@ const float vertex_data[] = {
 	BROWN_COLOR,
 };
 
-const GLshort index_data[] = {
+const GLushort index_data[] = {
 	0, 1, 2,
 	1, 0, 3,
 	2, 3, 0,
@@ -291,6 +336,18 @@ void init(){
 
 	printf("OpenGL version - %s\n", glGetString(GL_VERSION));
 
+	cube = node3d_create();
+	cube->mesh->vertex_data = cube_vertex_positions;
+	cube->mesh->index_data = cube_index_data2;
+	cube->mesh->draw_mode = GL_TRIANGLES;
+	cube->mesh->b_indexed_draw = 1;
+	cube->mesh->num_vertices = 48;
+	cube->mesh->num_indeces = nci;
+
+	node3d_gen_vao(cube);	
+
+	/*
+
 	initialize_vertex_buffer();
 
 	glGenVertexArrays(1, &vao1);
@@ -307,6 +364,8 @@ void init(){
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer_object);
 
     glBindVertexArray(0);
+
+	*/
 
     /*
     int e = glGetError();
@@ -372,7 +431,7 @@ void display(){
 	mat4_set_member(3, 'z', offsets2[2], camera_to_clip_matrix);
 	*/
 
-	glBindVertexArray(vao1);
+	//glBindVertexArray(vao1);
 
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	glClearDepth(1.0f);
@@ -402,7 +461,8 @@ void display(){
 	//glUniform4fv(offset_location, 1, offsets);
 	//glUniformMatrix4fv(rotation_matrix_location, 1, GL_FALSE, rot_mat);
 
-	node3d_draw(goblin);
+	//node3d_draw(goblin);
+	node3d_draw(cube);
 	GLenum gl_error = glGetError();
 	if(gl_error > 0){
 		printf("GL error = %i\n", gl_error);
@@ -418,7 +478,7 @@ void display(){
 	//glUniform3fv(offset_location, 1, offsets);
     //glDrawElementsBaseVertex(GL_TRIANGLES, ARRAY_COUNT(index_data), GL_UNSIGNED_SHORT, 0, number_of_vertices / 2);
 
-    glBindVertexArray(0);
+    //glBindVertexArray(0);
     glUseProgram(0);
 
 	glutSwapBuffers();
@@ -529,7 +589,7 @@ int main(int argc, char **argv){
 	glutMotionFunc(mouse_motion);
 	glutPassiveMotionFunc(mouse_motion);
 
-	goblin = load_model("data/models/goblin_obj.obj");
+	//goblin = load_model("data/models/goblin_obj.obj");
 
 	/*
 

@@ -13,6 +13,7 @@ void print_scene_data(struct aiScene* scene){
 	if(scene->mNumMeshes > 0){
 		print_mesh_data(scene->mMeshes, scene->mNumMeshes);
 	}
+
 }	
 
 void print_mesh_data(struct aiMesh** meshes, unsigned int num_meshes){
@@ -44,12 +45,12 @@ node3d* load_model(char* path){
 		mesh_size += scene->mMeshes[i]->mNumVertices;
 	}
 	int base = 0;
-	printf("Total num mesh vertices = %i\n", mesh_size);
+	//printf("Total num mesh vertices = %i\n", mesh_size);
 	p_n3d->mesh->num_vertices = mesh_size * 3;
 	p_n3d->mesh->vertex_data = malloc(mesh_size * 3 * sizeof(float));
 	memset(p_n3d->mesh->vertex_data, 1.0, mesh_size * 3 * sizeof(float));
 	for(i = 0; i < scene->mNumMeshes; i++){
-		printf("loading mesh num %i.\n", i);
+		//printf("loading mesh num %i.\n", i);
 		for(j = 0; j < scene->mMeshes[i]->mNumVertices; j++){
 			int index = (base + j) * 3;
 			eoe_vec4d res, ai_base;
@@ -67,7 +68,7 @@ node3d* load_model(char* path){
 			//printf("vertice.y - %f\n", res.z);
 		}
 		base += scene->mMeshes[i]->mNumVertices;
-		printf("Base = %i\n", base);
+		//printf("Base = %i\n", base);
 	}
 	/*
 	for(i = 0; i < p_n3d->mesh->num_vertices; i++){
