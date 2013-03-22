@@ -25,7 +25,7 @@
 #define SCROLL_DOWN 4
 #define Z_MAX 10.0
 #define Z_MIN -200.0
-#define Z_DELTA 1.0
+#define Z_DELTA 0.01
 
 void compute_offsets(float * _offsets);
 float calc_frustum_scale(float fov_deg);
@@ -49,7 +49,7 @@ mat4* perspective_matrix;
 mat4* camera_to_clip_matrix;
 
 float z_near = 1.0f; 
-float z_far = 6.0f;
+float z_far = 3.0f;
 
 int b_depth_clamping_active = 1;
 
@@ -180,7 +180,7 @@ const GLfloat cube_vertex_positions[] = {
    	 0.5,  1.0,  0.5  // color
 };
 
-const GLushort cube_index_data[] = {
+const GLushort cube_index_data2[] = {
 	0, 1, 2,
 	2, 3, 0,
 	0, 3, 4,
@@ -195,14 +195,14 @@ const GLushort cube_index_data[] = {
 	6, 7, 4
 };
 
-const GLushort cube_index_data2[] = {
+const GLushort cube_index_data[] = {
 	0, 1, 2,
 	2, 3, 0,
 	0, 3, 4,
 	4, 7, 3,
 };
 
-int nci = 12;
+int nci = 36;
 
 const int number_of_vertices = 8;
 
@@ -302,7 +302,8 @@ void init(){
 
 	perspective_matrix = create_id_mat4();
 	camera_to_clip_matrix = create_id_mat4();
-	frustum_scale = calc_frustum_scale(30.0);
+	//frustum_scale = calc_frustum_scale(145.0);
+	frustum_scale = 1.0;
 	mat4_set_member(0,'x', frustum_scale, camera_to_clip_matrix);
 	mat4_set_member(1,'y', frustum_scale, camera_to_clip_matrix);
 	double factor = (z_far + z_near) / (z_near - z_far);
@@ -376,9 +377,9 @@ void init(){
 	if(b_depth_clamping_active){
 		glEnable(GL_DEPTH_CLAMP);
 	}
-	glDepthMask(GL_TRUE);
-	glDepthFunc(GL_LEQUAL);
-	glDepthRange(0.0f, 1.0f);
+	//glDepthMask(GL_TRUE);
+	//glDepthFunc(GL_LEQUAL);
+	//glDepthRange(0.0f, 1.0f);
 	glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
     glFrontFace(GL_CW);
@@ -447,7 +448,7 @@ void display(){
 		rot = 0.0;
 	}
 
-	mat4* rot_mat = create_rotation_mat4(1.0,0.0,0.0,0.0);
+	mat4* rot_mat = create_rotation_mat4(0.0,1.0,0.0,rot);
 	//mat4* rot_mat = create_id_mat4();
 	eoe_vec4d vec1 = {.x = offsets[0], 
 				   	  .y = offsets[1], 
