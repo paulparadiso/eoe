@@ -446,6 +446,7 @@ void reshape (int w, int h)
 
 void keyboard(unsigned char key, int x, int y)
 {
+	printf("Keyboard key = %i\n", key);
 	switch (key)
 	{
 		case 27:
@@ -465,7 +466,7 @@ void keyboard(unsigned char key, int x, int y)
 }
 
 void mouse(int button, int state, int x, int y){
-	//printf("Mouse:\n\t:%i\n\t:%i\n\t:%i\n\t:%i\n", button, state, x, y);
+	printf("Mouse:\n\t:%i\n\t:%i\n\t:%i\n\t:%i\n", button, state, x, y);
 	if(button == SCROLL_UP){
 		offsets[2] += Z_DELTA;
 		if(offsets[2] > Z_MAX){

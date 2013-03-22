@@ -57,6 +57,6 @@ void node3d_draw(node3d* node){
 	*/
 	//glVertexPointer(3, GL_FLOAT, 0, node->mesh->)
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-	glDrawArrays(GL_POLYGON, 0, node->mesh->num_vertices);
+	glDrawArrays(GL_POINTS, 0, node->mesh->num_vertices);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
