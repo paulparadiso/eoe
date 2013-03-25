@@ -1,5 +1,5 @@
 #include "model_loader.h"
-#include "eoe_vector.h"
+#include "vec4.h"
 
 void print_scene_data(struct aiScene* scene){
 	printf("File data:\n");
@@ -53,11 +53,11 @@ node3d* load_model(char* path){
 		//printf("loading mesh num %i.\n", i);
 		for(j = 0; j < scene->mMeshes[i]->mNumVertices; j++){
 			int index = (base + j) * 3;
-			eoe_vec4d res, ai_base;
+			vec4d res, ai_base;
 			ai_base.x = scene->mMeshes[i]->mVertices[j].x;
 			ai_base.y = scene->mMeshes[i]->mVertices[j].y;
 			ai_base.z = scene->mMeshes[i]->mVertices[j].z;
-			//eoe_vec4d_unit(&res, &ai_base);
+			//vec4d_unit(&res, &ai_base);
 			p_n3d->mesh->mesh_offsets[i] = base;
 			//printf("adding to position - %i: ", index);
 			p_n3d->mesh->vertex_data[index] = ai_base.x;

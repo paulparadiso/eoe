@@ -1,4 +1,4 @@
-#include "eoe_vector.h"
+#include "vec4.h"
 #include "glsl_loader.h"
 #include "node.h"
 #include "model_loader.h"
@@ -188,7 +188,7 @@ const GLushort cube_index_data2[] = {
 	3, 2, 7,
 	7, 6, 2,
 	2, 1, 6,
-	6, 5, 2,
+	6, 5, 1,
 	1, 0, 4,
 	4, 5, 1,
 	4, 5, 6,
@@ -200,9 +200,10 @@ const GLushort cube_index_data[] = {
 	2, 3, 0,
 	0, 3, 4,
 	4, 7, 3,
+	/*4, 7, 3,*/
 };
 
-int nci = 36;
+int nci = 33;
 
 const int number_of_vertices = 8;
 
@@ -300,9 +301,9 @@ void init(){
 	//glLoadIdentity ();
 	//glOrtho(-1.0, 1.0, -1.0, 1.0, -1.0, 1.0);
 
-	perspective_matrix = create_id_mat4();
-	camera_to_clip_matrix = create_id_mat4();
-	//frustum_scale = calc_frustum_scale(145.0);
+	perspective_matrix = mat4_create_id();
+	camera_to_clip_matrix = mat4_create_id();
+	//frustum_scale = calc_frustum_scale(-45.0);
 	frustum_scale = 1.0;
 	mat4_set_member(0,'x', frustum_scale, camera_to_clip_matrix);
 	mat4_set_member(1,'y', frustum_scale, camera_to_clip_matrix);
@@ -311,8 +312,8 @@ void init(){
 	mat4_set_member(2,'w', -1.0, camera_to_clip_matrix);
 	factor = (2 * z_far * z_near) / (z_near - z_far);
 	mat4_set_member(3,'z', factor, camera_to_clip_matrix);
-	mat4_scale(0.1,0.1,0.1, camera_to_clip_matrix);
-	print_matrix(camera_to_clip_matrix);
+	//mat4_scale(0.1,0.1,0.1, camera_to_clip_matrix);
+	mat4_print(camera_to_clip_matrix);
 
 	if(!b_loader_shaders){
 		blob = glsl_create_blob();
@@ -377,13 +378,14 @@ void init(){
 	if(b_depth_clamping_active){
 		glEnable(GL_DEPTH_CLAMP);
 	}
-	//glDepthMask(GL_TRUE);
-	//glDepthFunc(GL_LEQUAL);
-	//glDepthRange(0.0f, 1.0f);
+	glDepthMask(GL_TRUE);
+	glDepthFunc(GL_LEQUAL);
+	glDepthRange(0.0f, 1.0f);
+	/*
 	glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
     glFrontFace(GL_CW);
-	
+	*/
 	//glPolygonMode ( GL_FRONT_AND_BACK, GL_LINE ) ;
 
     offsets[0] = 0.0;
@@ -409,12 +411,12 @@ void compute_offsets(float *_offset){
 
 	//_offset[0] = cosf(time * scale) * 0.5f;
 	//_offset[1] = sinf(time * scale) * 0.5f;
-	_offset[2] = sinf(time * scale) * -4.0f;
-	printf("offset z = %f\n", _offset[2]);
+	_offset[0] = sinf(time * scale) * 0.5f;
+	//printf("offset z = %f\n", _offset[2]);
 }
 
 void display(){
-	//compute_offsets(offsets);
+	compute_offsets(offsets);
 	//printf("offsets = %f, %f\n", offsets[0], offsets[1]);
 
 	//offsets[0] = 0.0;
@@ -443,14 +445,14 @@ void display(){
 	//offsets[2] = 0.8;
 	//glUniform3fv(offset_location, 1, offsets);
 	
-	rot += 1.0;
+	rot += 10.0;
 	if(rot > 360.0){
 		rot = 0.0;
 	}
 
-	mat4* rot_mat = create_rotation_mat4(0.0,1.0,0.0,rot);
+	mat4* rot_mat = mat4_from_rotation(1.0,1.0,0.0,rot);
 	//mat4* rot_mat = create_id_mat4();
-	eoe_vec4d vec1 = {.x = offsets[0], 
+	vec4d vec1 = {.x = offsets[0], 
 				   	  .y = offsets[1], 
 				   	  .z = offsets[2],
 				   	  .w = offsets[3]};
@@ -469,7 +471,7 @@ void display(){
 		printf("GL error = %i\n", gl_error);
 	}
 
-	free_mat4(rot_mat);
+	mat4_free(rot_mat);
 
 	//glDrawElements(GL_TRIANGLES, ARRAY_COUNT(index_data), GL_UNSIGNED_SHORT, 0);
 
@@ -562,15 +564,15 @@ int main(int argc, char **argv){
 		sprintf(vertex_shader, "%s.vert", "default");
 		sprintf(fragment_shader, "%s.frag", "default");
 	}
-	eoe_vec4d vec1 = {.x = 2.1, 
+	vec4d vec1 = {.x = 2.1, 
 				   	  .y = 3.2, 
 				   	  .z = 45.2};
-	eoe_vec4d vec1unit;
-	eoe_vec4d_print(&vec1);
-	eoe_vec4d_unit(&vec1unit, &vec1);
-	double mag = eoe_vec4d_mag(&vec1);
+	vec4d vec1norm;
+	vec4d_print(&vec1);
+	vec4d_norm(&vec1norm, &vec1);
+	double mag = vec4d_mag(&vec1);
 	printf("Vec1 has a magnitude of %f\n", mag);
-	eoe_vec4d_print(&vec1unit);
+	vec4d_print(&vec1norm);
 
 	glutInit(&argc,argv);
 	#ifdef __APPLE__

@@ -2,7 +2,7 @@
 
 node3d* node3d_create(){
 	node3d* node = malloc(sizeof(node3d));
-	node->transform = create_id_mat4();
+	node->transform = mat4_create_id();
 	node->position.x = 0.0;
 	node->position.y = 0.0;
 	node->position.z = 0.0;
@@ -15,7 +15,7 @@ node3d* node3d_create(){
 void node3d_free(node3d* node){
 	free(node->mesh->vertex_data);
 	free(node->mesh->mesh_offsets);
-	free_mat4(node->transform);
+	mat4_free(node->transform);
 	free(node);
 }
 
@@ -63,6 +63,7 @@ void node3d_gen_vao(node3d* node){
 
 		glBindVertexArray(0);
 
+		/*
 		int i;
 		printf("Shape coords:\n");
 		for(i = 0; i < node->mesh->num_indeces; i++){
@@ -71,6 +72,7 @@ void node3d_gen_vao(node3d* node){
 									    vertex_index,node->mesh->vertex_data[vertex_index * 3 + 1], 
 									    vertex_index,node->mesh->vertex_data[vertex_index * 3 + 2]);
 		}
+		*/
 
 	} else {
 		glGenBuffers(1, &node->mesh->vertex_buffer_object);

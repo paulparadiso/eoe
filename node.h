@@ -1,7 +1,7 @@
 #ifndef __NODE_H__
 #define __NODE_H__
 
-#include "eoe_vector.h"
+#include "vec4.h"
 
 #ifdef __APPLE__
 	#include <GLUT/glut.h>
@@ -40,7 +40,7 @@ Struct to hold node data include model, position and transforms.
 
 typedef struct node3d{
 	mesh_data* mesh;
-	eoe_vec4d position;
+	vec4d position;
 	mat4* transform;
 } node3d;
 
