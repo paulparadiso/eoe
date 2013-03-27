@@ -71,6 +71,12 @@ Generate the vao that will be used to draw the model.
 void node3d_gen_vao(node3d* node);
 
 /*
+Generate the vbo from array of vertices and indeces.
+*/
+
+void node3d_gen_vbo(node3d* node, float* vertices, int* indeces, int i_count, int v_depth);
+
+/*
 Draw the model.
 */
 

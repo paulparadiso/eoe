@@ -161,23 +161,59 @@ const float vertex_positions[] = {
 	0.0f, 1.0f, 1.0f, 1.0f,
 };
 
+
 const GLfloat cube_vertex_positions[] = {
-	-0.5,  0.5, -0.5, // vertex
-	 0.5,  0.5, -0.5, // vertex
-	 0.5,  0.5,  0.5, // vertex
-	-0.5,  0.5,  0.5, // vertex
-	-0.5, -0.5, -0.5, // vertex
-	 0.5, -0.5, -0.5, // vertex
-	 0.5, -0.5,  0.5, // vertex
-	-0.5, -0.5,  0.5, // vertex
-	 1.0,  1.0,  0.5,  // color
-	 1.0,  0.5,  1.0, // color
- 	 0.5,  0.5,  1.0, // color
- 	 0.5,  0.5,  0.5, // color 
- 	 1.0,  0.5,  0.5, // color
- 	 1.0,  1.0,  1.0, // color
-   	 0.5,  1.0,  1.0, // color
-   	 0.5,  1.0,  0.5  // color
+	/*0*/ -0.5,  0.5, -0.5, // vertex
+	/*1*/  0.5,  0.5, -0.5, // vertex
+	/*2*/  0.5,  0.5,  0.5, // vertex
+	/*3*/ -0.5,  0.5,  0.5, // vertex
+	/*4*/ -0.5, -0.5, -0.5, // vertex
+	/*5*/  0.5, -0.5, -0.5, // vertex
+	/*6*/  0.5, -0.5,  0.5, // vertex
+	/*7*/ -0.5, -0.5,  0.5, // vertex
+};
+
+const GLfloat cube_vertex_positions2[] = {
+	-1.0, -1.0,  1.0,
+    1.0, -1.0,  1.0,
+    -1.0,  1.0,  1.0,
+    1.0,  1.0,  1.0,
+    -1.0, -1.0, -1.0,
+    1.0, -1.0, -1.0,
+    -1.0,  1.0, -1.0,
+    1.0,  1.0, -1.0,
+};
+
+/*
+const int cube_index_data2[] = {
+	0, 1, 2,
+	2, 3, 0,
+	0, 3, 4,
+	4, 7, 3,
+	3, 2, 7,
+	7, 6, 2,
+	2, 1, 6,
+	6, 5, 1,
+	1, 0, 4,
+	4, 5, 1,
+	4, 5, 6,
+	6, 7, 4
+};
+*/
+
+const int cube_index_data[] = {
+	0, 1, 2,
+	2, 3, 0,
+	0, 3, 4,
+	4, 7, 3,
+	3, 2, 7,
+	7, 6, 2,
+	2, 1, 6,
+	6, 5, 1,
+	1, 0, 4,
+	4, 5, 1,
+	4, 5, 6,
+	6, 7, 4	
 };
 
 const GLushort cube_index_data2[] = {
@@ -192,18 +228,11 @@ const GLushort cube_index_data2[] = {
 	1, 0, 4,
 	4, 5, 1,
 	4, 5, 6,
-	6, 7, 4
-};
-
-const GLushort cube_index_data[] = {
-	0, 1, 2,
-	2, 3, 0,
-	0, 3, 4,
-	4, 7, 3,
+	6, 7, 4	
 	/*4, 7, 3,*/
 };
 
-int nci = 33;
+int nci = 36;
 
 const int number_of_vertices = 8;
 
@@ -343,11 +372,11 @@ void init(){
 	cube->mesh->index_data = cube_index_data2;
 	cube->mesh->draw_mode = GL_TRIANGLES;
 	cube->mesh->b_indexed_draw = 1;
-	cube->mesh->num_vertices = 48;
+	cube->mesh->num_vertices = 24;
 	cube->mesh->num_indeces = nci;
 
 	node3d_gen_vao(cube);	
-
+	//node3d_gen_vbo(cube, cube_vertex_positions, cube_index_data2, nci, 3);
 	/*
 
 	initialize_vertex_buffer();
@@ -378,19 +407,20 @@ void init(){
 	if(b_depth_clamping_active){
 		glEnable(GL_DEPTH_CLAMP);
 	}
+
 	glDepthMask(GL_TRUE);
 	glDepthFunc(GL_LEQUAL);
 	glDepthRange(0.0f, 1.0f);
-	/*
-	glEnable(GL_CULL_FACE);
-    glCullFace(GL_BACK);
-    glFrontFace(GL_CW);
-	*/
+
+	//glEnable(GL_CULL_FACE);
+    //glCullFace(GL_BACK);
+    //glFrontFace(GL_CW);
+
 	//glPolygonMode ( GL_FRONT_AND_BACK, GL_LINE ) ;
 
     offsets[0] = 0.0;
     offsets[1] = 0.0;
-    offsets[2] = 0.0;
+    offsets[2] = -2.0;
     offsets[3] = 1.0;
 }
 
@@ -416,7 +446,7 @@ void compute_offsets(float *_offset){
 }
 
 void display(){
-	compute_offsets(offsets);
+	//compute_offsets(offsets);
 	//printf("offsets = %f, %f\n", offsets[0], offsets[1]);
 
 	//offsets[0] = 0.0;
@@ -445,12 +475,12 @@ void display(){
 	//offsets[2] = 0.8;
 	//glUniform3fv(offset_location, 1, offsets);
 	
-	rot += 10.0;
+	rot += 0.05;
 	if(rot > 360.0){
 		rot = 0.0;
 	}
 
-	mat4* rot_mat = mat4_from_rotation(1.0,1.0,0.0,rot);
+	mat4* rot_mat = mat4_from_rotation(0.0,1.0,0.0,rot);
 	//mat4* rot_mat = create_id_mat4();
 	vec4d vec1 = {.x = offsets[0], 
 				   	  .y = offsets[1], 

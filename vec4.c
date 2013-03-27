@@ -9,11 +9,11 @@ void vec4d_copy(vec4d* to, vec4d* from){
 
 }
 
-void vec4d_neg(vec4d* to, vec4d* from){
-	to[0] = -from[0];
-	to[1] = -from[1];
-	to[2] = -from[2];
-	to[3] = -from[3];
+void vec4d_neg(vec4d* dest, vec4d* src){
+	dest->x = -(src->x);
+	dest->y = -(src->y);
+	dest->z = -(src->z);
+	dest->w = -(src->w);
 }
 
 void vec4d_add(vec4d *res, vec4d *base, vec4d *m){
@@ -58,11 +58,11 @@ void vec4d_norm(vec4d* res, vec4d* base){
 }
 
 double vec4d_dist(vec4d* a, vec4d* b){
-	double dx = a->x - b->x;
-	double dy = a->y - b->y;
-	double dz = a->z - b->z;
-	double dw = a->w - b->w;
-	return sqrt(pow(dx, 2) + pow(dy, 2) + pow(dz, 2) + pow(dw + 2));
+	double px = pow((a->x - b->x), 2);
+	double py = pow((a->y - b->y), 2);
+	double pz = pow((a->z - b->z), 2);
+	double pw = pow((a->w - b->w), 2);
+	return sqrt(px + py + pz + pw);
 }
 
 double vec4d_dot(vec4d* base, vec4d* m){

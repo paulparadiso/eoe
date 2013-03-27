@@ -31,13 +31,17 @@ void node3d_gen_vao(node3d* node){
 		}
 		*/
 
+		glGenVertexArrays(1, &node->mesh->vao);
+		glBindVertexArray(node->mesh->vao);
+
+
 		glGenBuffers(1, &node->mesh->vertex_buffer_object);
 		
 		printf("vertex buffer = %i, size = %i\n", node->mesh->vertex_buffer_object, sizeof(node->mesh->vertex_data));
 
 		glBindBuffer(GL_ARRAY_BUFFER, node->mesh->vertex_buffer_object);
 		glBufferData(GL_ARRAY_BUFFER, node->mesh->num_vertices * sizeof(float), node->mesh->vertex_data, GL_STATIC_DRAW);
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		//glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 		glGenBuffers(1, &node->mesh->index_buffer_object);
 
@@ -45,21 +49,20 @@ void node3d_gen_vao(node3d* node){
 		
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, node->mesh->index_buffer_object);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, node->mesh->num_indeces * sizeof(GLushort), node->mesh->index_data, GL_STATIC_DRAW);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+		//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-		glGenVertexArrays(1, &node->mesh->vao);
 		
-		int color_offset = node->mesh->num_vertices / 2 * sizeof(float);
-
-		glBindVertexArray(node->mesh->vao);
-		glBindBuffer(GL_ARRAY_BUFFER, node->mesh->vertex_buffer_object);
 		glEnableVertexAttribArray(0);
-		glEnableVertexAttribArray(1);
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)color_offset);
+
+		//int color_offset = node->mesh->num_vertices / 2 * sizeof(float);
+
+		//glBindBuffer(GL_ARRAY_BUFFER, node->mesh->vertex_buffer_object);
+		//glEnableVertexAttribArray(1);
+		//glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)color_offset);
 		//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, node->mesh->index_buffer_object);
 
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, node->mesh->index_buffer_object);
+		//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, node->mesh->index_buffer_object);
 
 		glBindVertexArray(0);
 
@@ -90,32 +93,45 @@ void node3d_gen_vao(node3d* node){
 	}
 }
 
+void node3d_gen_vbo(node3d* node, float* vertices, int* indeces, int i_count, int v_depth){
+	node->mesh->num_vertices = i_count;
+	node->mesh->vertex_data = malloc(node->mesh->num_vertices * v_depth * sizeof(float));
+	memset(node->mesh->vertex_data, 0, node->mesh->num_vertices * v_depth * sizeof(float));
+	int i, j;
+	for(i = 0; i < i_count; i++){
+		int mesh_index = i * v_depth;
+		printf("writing to address - %i = %f | %i\n", mesh_index, node->mesh->vertex_data[mesh_index], indeces[i]);
+		//memcpy(&node->mesh->vertex_data[mesh_index], &vertices[indeces[i]], sizeof(float) * v_depth);
+		printf("Cube Coord:\n\t");
+		for(j = 0; j < v_depth; j++){
+			float val = vertices[indeces[i + j]];
+			printf("%f ", val);
+			node->mesh->vertex_data[mesh_index + j] = val;
+		}
+		printf("\n");
+	}
+	for(i = 0; i < i_count * v_depth; i++){
+		printf("point - %i = %f\n", i, node->mesh->vertex_data[i]);
+	}
+	glGenVertexArrays(1, &node->mesh->vao);
+	glBindVertexArray(node->mesh->vao);
+	glGenBuffers(1, &node->mesh->vertex_buffer_object);
+	glBindBuffer(GL_ARRAY_BUFFER, node->mesh->vertex_buffer_object);
+	glBufferData(GL_ARRAY_BUFFER, node->mesh->num_vertices * 3 * sizeof(float), node->mesh->vertex_data, GL_STATIC_DRAW);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	//glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
+}
+
 void node3d_draw(node3d* node){
 	if(node->mesh->b_indexed_draw){
 		glBindVertexArray(node->mesh->vao);
 		glDrawElements(GL_TRIANGLES, node->mesh->num_indeces, GL_UNSIGNED_SHORT, NULL);
 		glBindVertexArray(0);
 	} else {
-		int i;
-		glBindBuffer(GL_ARRAY_BUFFER, node->mesh->vertex_buffer_object);
-		/*
-		for(i = 0; i < node->mesh->num_meshes; i++){
-			int num_points;
-			if(i < node->mesh->num_meshes - 2){
-				num_points = node->mesh->mesh_offsets[i + 1] - node->mesh->mesh_offsets[i];
-			} else {
-				num_points = node->mesh->num_vertices - node->mesh->mesh_offsets[i];
-			}
-			//glDrawElementsBaseVertex(GL_POINTS, num_points, GL_UNSIGNED_SHORT, 0, node->mesh->mesh_offsets[i]);
-			//int b = node->mesh->mesh_offsets[i];
-			//int s = node->mesh->mesh_offsets[i] + num_points;
-			//printf("drawing from %i to %i\n", b, s);
-			glDrawArrays(GL_POINTS, b, s);
-		}
-		*/
-		//glVertexPointer(3, GL_FLOAT, 0, node->mesh->)
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-		glDrawArrays(GL_POINTS, 0, node->mesh->num_vertices);
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glBindVertexArray(node->mesh->vao);
+		glDrawArrays(node->mesh->draw_mode, 0, node->mesh->num_vertices);
+		glBindVertexArray(0);
 	}
 }
