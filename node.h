@@ -28,6 +28,7 @@ typedef struct mesh_data{
 	GLuint vao;
 	GLenum draw_mode;
 	int b_indexed_draw;
+	int b_has_vertex_colors;
 	unsigned int* mesh_offsets;
 	unsigned int num_meshes;
 	unsigned int num_vertices;

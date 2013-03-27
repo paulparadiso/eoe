@@ -171,6 +171,14 @@ const GLfloat cube_vertex_positions[] = {
 	/*5*/  0.5, -0.5, -0.5, // vertex
 	/*6*/  0.5, -0.5,  0.5, // vertex
 	/*7*/ -0.5, -0.5,  0.5, // vertex
+	/*0*/  1.0,  0.0,  0.0, // color
+	/*1*/  0.0,  1.0,  0.0, // color
+	/*2*/  0.0,  0.0,  1.0, // color
+	/*3*/  1.0,  1.0,  0.0, // color
+	/*4*/  0.0,  1.0,  1.0, // color
+	/*5*/  1.0,  0.0,  1.0, // color
+	/*6*/  1.0,  1.0,  1.0, // color
+	/*7*/  0.0,  0.0,  0.0, // color
 };
 
 const GLfloat cube_vertex_positions2[] = {
@@ -372,6 +380,7 @@ void init(){
 	cube->mesh->index_data = cube_index_data2;
 	cube->mesh->draw_mode = GL_TRIANGLES;
 	cube->mesh->b_indexed_draw = 1;
+	cube->mesh->b_has_vertex_colors = 1;
 	cube->mesh->num_vertices = 24;
 	cube->mesh->num_indeces = nci;
 
@@ -407,6 +416,8 @@ void init(){
 	if(b_depth_clamping_active){
 		glEnable(GL_DEPTH_CLAMP);
 	}
+
+	glEnable(GL_POLYGON_SMOOTH);
 
 	glDepthMask(GL_TRUE);
 	glDepthFunc(GL_LEQUAL);
@@ -475,7 +486,7 @@ void display(){
 	//offsets[2] = 0.8;
 	//glUniform3fv(offset_location, 1, offsets);
 	
-	rot += 0.05;
+	rot += 0.5;
 	if(rot > 360.0){
 		rot = 0.0;
 	}

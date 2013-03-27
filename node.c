@@ -9,6 +9,7 @@ node3d* node3d_create(){
 	node->position.w = 1.0;
 	node->mesh = malloc(sizeof(mesh_data));
 	node->mesh->b_indexed_draw = 0;
+	node->mesh->b_has_vertex_colors = 0;
 	return node;
 }
 
@@ -40,7 +41,10 @@ void node3d_gen_vao(node3d* node){
 		printf("vertex buffer = %i, size = %i\n", node->mesh->vertex_buffer_object, sizeof(node->mesh->vertex_data));
 
 		glBindBuffer(GL_ARRAY_BUFFER, node->mesh->vertex_buffer_object);
-		glBufferData(GL_ARRAY_BUFFER, node->mesh->num_vertices * sizeof(float), node->mesh->vertex_data, GL_STATIC_DRAW);
+		
+		int buffer_size = node->mesh->num_vertices * sizeof(float) * (1 + node->mesh->b_has_vertex_colors);
+
+		glBufferData(GL_ARRAY_BUFFER, buffer_size, node->mesh->vertex_data, GL_STATIC_DRAW);
 		//glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 		glGenBuffers(1, &node->mesh->index_buffer_object);
@@ -55,6 +59,10 @@ void node3d_gen_vao(node3d* node){
 		glEnableVertexAttribArray(0);
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
+		if(node->mesh->b_has_vertex_colors){
+			glEnableVertexAttribArray(1);
+			glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)(node->mesh->num_vertices / 2));		
+		}
 		//int color_offset = node->mesh->num_vertices / 2 * sizeof(float);
 
 		//glBindBuffer(GL_ARRAY_BUFFER, node->mesh->vertex_buffer_object);

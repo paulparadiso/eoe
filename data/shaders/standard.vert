@@ -21,6 +21,7 @@ void main()
 	//the_color = color;
 
 	//the_color = noise4(position.x * 1000.0);
-	the_color = vec4(1.0,1.0,1.0,1.0);
+	//the_color = vec4(1.0,1.0,1.0,1.0);
+	the_color = color;
 }
 
