@@ -1,101 +1,91 @@
 #include "sync.h"
 
-char* list_url = "http://localhost:8080/getimgs"
-int data_wait = DATA_WAIT_NONE;
+char* list_url = "http://localhost:8080/getimgs";
+char* img_url = "http://farm9.staticflickr.com/8522/8610102162_02c5b5beaa_m.jpg";
+//int data_wait = DATA_WAIT_NONE;
 
 size_t data_recv(void *ptr, size_t size, size_t nmemb, void *data){
 	printf("data write.\n");
 
 	size_t real_size = size * nmemb;
 
-	if(real_size = 0){
-		return 0;
-	}
-
-	curl_mem* page = (curl_mem*)data;
-	page->mem = realloc(page->mem, page->size + real_size + 1);
-	if(page->mem == NULL){
-		printf("not enough memory\n");
+	if(real_size == 0){
 		return 0;
 	} 
-	memcpy(&(page->mem[page->size]), ptr, real_size);
+	curl_buffer* page = (curl_buffer*)data;
+	page->buffer = realloc(page->buffer, page->size + real_size + 1);
+	if(page->buffer == NULL){
+		return 0;
+	} 
+	memcpy(&(page->buffer[page->size]), ptr, real_size);
 	page->size += real_size;
-	//page->mem[page->size] = 0;
-
-	//data_loaded(page);
+	page->buffer[page->size] = 0;
 
 	return real_size;
 
 }
 
-void get_file(CURL* curl, char* url, int file_type, void* mem_cnk){
-	if(file_type == DATA_FILE_JSON){
-
-	}
-	if(file_type == DATA_FILE_IMG){
-
-	}
+size_t header_recv(void *ptr, size_t size, size_t nmemb, void *data){
+	size_t real_size = size * nmemb;
+	printf("%s", (char*)ptr);
+	return real_size;
 }
 
-size_t write_data_to_file(void *ptr, size_t size, size_t nmemb, void *file){
-	size_t written = fwrite(ptr, size, nmemb, file);
-	return written;
+size_t write_data_to_file(char* name, curl_buffer* buf){
+	FILE* file = fopen(name, "wb");
+	fwrite(buf->buffer, 1, buf->size, file);
+	fclose(file);
 }
 
-void data_loaded(curl_mem* mem){
-	if(curl){
-		curl_easy_setopt(curl, CURLOPT_URL, "http://farm9.staticflickr.com/8397/8612674243_5774fe9571_m.jpg");
-		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_data_to_file);
-		curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void*)file);
-		res = curl_easy_perform(curl);
-		if(res != CURLE_OK){
-			fprintf(stderr, "curl_easy_perform() failed: %s\n", 
-					curl_easy_strerror(res));
-		} else {
-			//fwrite((void*)chunk.mem, 1, chunk.size, file);
-			//process_json(&chunk);
-			//data_loaded(&chunk);
-		}
-		fclose(file);
-	}
-	if(data_wait == DATA_WAIT_NONE){
-		return;
+int get_file(CURL* curl, char* url, curl_buffer* buf){
+	curl_easy_setopt(curl, CURLOPT_URL, list_url);
+	curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void*)buf);
+	int res = curl_easy_perform(curl);
+	if(res != CURLE_OK){
+		fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
 	} 
-	if(data_wait == DATA_WAIT_LIST){
-		process_json_list(mem);
-		return;
-	}
-	if(data_wait == DATA_WAIT_IMG){
-		process_json_img(mem);
-		return;
-	}
+	return res;
 }
 
-void process_json_list(curl_mem* data, char** out){
-	json_object *json_obj = json_tokener_parse(data->mem);
+void extract_file_name(char* url, char* name){
+	char domain[256];
+	char id[256];
+	sscanf("http://%s/%s/%s", domain, id, name);
+	//free(domain);
+	//free(id);
+}
+
+int json_to_list(curl_buffer* data, char** out){
+	json_object *json_obj = json_tokener_parse(data->buffer);
 	//printf("JSON type - %i\n", json_object_get_type(json_obj));
 	if(json_object_get_type(json_obj) == json_type_array){
 		int len = json_object_array_length(json_obj);
-		
+		out = malloc(sizeof(char*) * len);
 		int i;
 		for(i = 0; i < len; i++){
 			json_object* str_obj = json_object_array_get_idx(json_obj, i);
-			printf("img - %s\n", json_object_get_string(str_obj));
+			//printf("writing %s of length %i\n", json_object_get_string(str_obj), json_object_get_string_len(json_obj));
+			out[i] = calloc(1, 256);
+			//memcpy(out[i], json_object_get_string(str_obj), json_object_get_string_len(json_obj));
+			sprintf(out[i], "%s", json_object_get_string(str_obj)); 
+			printf("img - %s\n", out[i]);
 		}
+		return len;
 	} else {
 		printf("Output is not array.\n");
+		return 0;
 	}
-}
-
-void process_json_img(curl_mem* data){
-	json_object *json_obj;
 }
 
 int main(int argc, char** argv){
 	CURL* curl;
+	curl_buffer files;
+	char* header_data;
 
-	chunk.mem = malloc(1);
-	chunk.size = 0;
+	files.buffer = malloc(1);
+	files.size = 0;
+
+	int res;
 
 	//file = fopen("../test/images/out.jpg", "wb");
 
@@ -104,11 +94,31 @@ int main(int argc, char** argv){
 	if(curl){
 		curl_easy_setopt(curl, CURLOPT_USERAGENT, "libcurl-agent/1.0");
 		curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
-		get_file(curl, list_url, FILE_TYPE_JSON, &chunk);
-
+		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, data_recv);
+		curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, header_recv);
+		curl_easy_setopt(curl, CURLOPT_WRITEHEADER, (void*)header_data);
+		res = get_file(curl, list_url, &files);
+		if(res == CURLE_OK){
+			char** img_list;
+			int len = json_to_list(&files, img_list);
+			if(len > 0){
+				int i;
+				for(i = 0; i < len; i++){
+					curl_buffer tmp_buffer;
+					res = get_file(curl, img_list[i], &tmp_buffer);
+					if(res == CURLE_OK){
+						char file_name[256];
+						extract_file_name(img_list[i], file_name);
+						printf("extracted file name - %s\n", file_name);
+						//char* path = "../images/" + file_name;
+						//write_data_to_file(path, tmp_buffer);
+						free(tmp_buffer.buffer);
+					}
+				}
+			}
+		}
 	}
-
-
+	curl_easy_cleanup(curl);
 	return 0;
 }
 

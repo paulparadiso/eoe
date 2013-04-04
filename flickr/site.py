@@ -33,7 +33,9 @@ class GetImgs:
 		urls = []
 		photo_keys = r_s.keys('photo:*')
 		for i in photo_keys:
-			urls.append(r_s.hget(i, 'url'))
+			if i is not None:
+				urls.append(r_s.hget(i, 'url'))
+		web.header('Content-Type', 'application/json');
 		return json.dumps(urls)
 
 def main():
