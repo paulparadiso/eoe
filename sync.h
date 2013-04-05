@@ -1,3 +1,6 @@
+#ifndef __SYNC_H__
+#define __SYNC_H__
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -36,7 +39,10 @@ Extract the name of the file from the url and store it in name.
 void extract_file_name(char* url, char* name);
 
 /*
-Take a json response and build a list of urls.
+Take a json response and build a list of urls. char*** url_list
+is the address of a char** array of strings.
 */
 
-int json_to_strings(curl_buffer* data, char** url_list);
+int json_to_strings(curl_buffer* data, char*** url_list);
+
+#endif

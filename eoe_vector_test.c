@@ -2,6 +2,7 @@
 #include "glsl_loader.h"
 #include "node.h"
 #include "model_loader.h"
+#include "image.h"
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
@@ -59,6 +60,8 @@ int height = 500;
 node3d* goblin;
 
 node3d* cube;
+
+image_buffer image;
 
 const float vertex_positions[] = {
 	0.25f,  0.25f, 0.75f, 1.0f,
@@ -160,7 +163,6 @@ const float vertex_positions[] = {
 	0.0f, 1.0f, 1.0f, 1.0f,
 	0.0f, 1.0f, 1.0f, 1.0f,
 };
-
 
 const GLfloat cube_vertex_positions[] = {
 	/*0*/ -0.5,  0.5, -0.5, // vertex
@@ -300,6 +302,8 @@ GLuint index_buffer_object;
 GLuint vao1;
 GLuint vao2;
 
+GLuint texture;
+
 float rot = 0.0;
 
 float calc_frustum_scale(float fov_deg){
@@ -373,7 +377,25 @@ void init(){
 		glUseProgram(0);
 	}
 
+	glEnable(GL_DEPTH_TEST);
+	if(b_depth_clamping_active){
+		glEnable(GL_DEPTH_CLAMP);
+	}
+
+	glEnable(GL_TEXTURE_2D);
+	glEnable(GL_POLYGON_SMOOTH);
+
+	glDepthMask(GL_TRUE);
+	glDepthFunc(GL_LEQUAL);
+	glDepthRange(0.0f, 1.0f);
+
+	//glEnable(GL_CULL_FACE);
+    //glCullFace(GL_BACK);
+    //glFrontFace(GL_CW);
+
 	printf("OpenGL version - %s\n", glGetString(GL_VERSION));
+
+	image_open("../images/8610413449_693cf0505d_m.jpg", &image);
 
 	cube = node3d_create();
 	cube->mesh->vertex_data = cube_vertex_positions;
@@ -411,21 +433,6 @@ void init(){
     int e = glGetError();
 	printf("GL error - %s\n", gluErrorString(e));
 	*/
-	
-	glEnable(GL_DEPTH_TEST);
-	if(b_depth_clamping_active){
-		glEnable(GL_DEPTH_CLAMP);
-	}
-
-	glEnable(GL_POLYGON_SMOOTH);
-
-	glDepthMask(GL_TRUE);
-	glDepthFunc(GL_LEQUAL);
-	glDepthRange(0.0f, 1.0f);
-
-	//glEnable(GL_CULL_FACE);
-    //glCullFace(GL_BACK);
-    //glFrontFace(GL_CW);
 
 	//glPolygonMode ( GL_FRONT_AND_BACK, GL_LINE ) ;
 

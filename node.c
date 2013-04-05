@@ -10,6 +10,7 @@ node3d* node3d_create(){
 	node->mesh = malloc(sizeof(mesh_data));
 	node->mesh->b_indexed_draw = 0;
 	node->mesh->b_has_vertex_colors = 0;
+	node->mesh->b_has_texture = 0;
 	return node;
 }
 
@@ -21,6 +22,16 @@ void node3d_free(node3d* node){
 }
 
 void node3d_load(node3d* node, void* data, int data_type){}
+
+void node3d_load_texture(node3d* node, image_buffer* img, int offset){
+	glGetTextures(1, &node->mesh->texture);
+	glBindTexture(GL_TEXTURE_2D, node->mesh->texture);
+	glTexImage2D(GL_TEXTURE_2D, 0, 3, img->width, img->height, 0, GL_RGB, GL_UNSIGNED_BYTE, image->pixels);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX, GL_LINEAR);
+	node->mesh->b_has_texture = 1;
+	node->mesh->texture_index_offset = offset;
+}
 
 void node3d_gen_vao(node3d* node){
 	if(node->mesh->b_indexed_draw){
@@ -62,6 +73,10 @@ void node3d_gen_vao(node3d* node){
 		if(node->mesh->b_has_vertex_colors){
 			glEnableVertexAttribArray(1);
 			glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)(node->mesh->num_vertices / 2));		
+		}
+
+		if(node->mesh->b_has_texture){
+
 		}
 		//int color_offset = node->mesh->num_vertices / 2 * sizeof(float);
 

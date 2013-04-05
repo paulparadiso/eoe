@@ -5,9 +5,9 @@ COMPILERFLAGS = -Wall -g -std=c99 -pedantic
 CC = gcc
 CFLAGS = $(COMPILERFLAGS)
 
-OBJECTS = vec4.o glsl_loader.o node.o model_loader.o
+OBJECTS = vec4.o glsl_loader.o node.o model_loader.o image.o
 
-LIBS = -lGL -lglut -lm -lassimp
+LIBS = -lGL -lglut -lm -lassimp -ljpeg
 
 INCLUDES = -I/usr/include/GL
 
@@ -41,6 +41,9 @@ glsl_LINUX:
 
 node_LINUX:
 	$(CC) $(CFLAGS) $(LIBS) -c node.c
+
+image_LINUX:
+	$(CC) -g -c -ljpeg image.c
 
 model_loader_LINUX:
 	$(CC) $(CFLAGS) $(LIBS) -I./assimp/include/ -c model_loader.c
