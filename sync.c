@@ -38,6 +38,7 @@ size_t write_data_to_file(char* name, curl_buffer* buf){
 }
 
 int get_file(CURL* curl, char* url, curl_buffer* buf){
+	printf("getting file - %s.\n", url);
 	curl_easy_setopt(curl, CURLOPT_URL, list_url);
 	curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void*)buf);
 	int res = curl_easy_perform(curl);
@@ -48,6 +49,7 @@ int get_file(CURL* curl, char* url, curl_buffer* buf){
 }
 
 void extract_file_name(char* url, char* name){
+	printf("extracting %s\n", url);
 	char domain[256];
 	char id[256];
 	sscanf("http://%s/%s/%s", domain, id, name);
@@ -61,13 +63,15 @@ int json_to_list(curl_buffer* data, char** out){
 	if(json_object_get_type(json_obj) == json_type_array){
 		int len = json_object_array_length(json_obj);
 		out = malloc(sizeof(char*) * len);
+		//*out = calloc(1, sizeof(char) * len * 256);
 		int i;
 		for(i = 0; i < len; i++){
 			json_object* str_obj = json_object_array_get_idx(json_obj, i);
 			//printf("writing %s of length %i\n", json_object_get_string(str_obj), json_object_get_string_len(json_obj));
-			out[i] = calloc(1, 256);
+			out[i] = (char*)calloc(256, 1);
 			//memcpy(out[i], json_object_get_string(str_obj), json_object_get_string_len(json_obj));
-			sprintf(out[i], "%s", json_object_get_string(str_obj)); 
+			//sprintf(out[i], "%s", json_object_get_string(str_obj)); 
+			strncpy(out[i], json_object_get_string(str_obj), 256);
 			printf("img - %s\n", out[i]);
 		}
 		return len;
@@ -101,11 +105,18 @@ int main(int argc, char** argv){
 		if(res == CURLE_OK){
 			char** img_list;
 			int len = json_to_list(&files, img_list);
+			printf("Have %i files in queue.\n", len);
 			if(len > 0){
 				int i;
 				for(i = 0; i < len; i++){
+					printf("img_list[%i] = %s\n", i, img_list[i]);
+					/*
 					curl_buffer tmp_buffer;
+					tmp_buffer.buffer = malloc(1);
+					tmp_buffer.size = 0;
+					printf("downloading file - %i.\n", i);
 					res = get_file(curl, img_list[i], &tmp_buffer);
+					printf("download result = %i.\n", res);
 					if(res == CURLE_OK){
 						char file_name[256];
 						extract_file_name(img_list[i], file_name);
@@ -114,6 +125,7 @@ int main(int argc, char** argv){
 						//write_data_to_file(path, tmp_buffer);
 						free(tmp_buffer.buffer);
 					}
+					*/
 				}
 			}
 		}
