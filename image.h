@@ -25,6 +25,7 @@ void image_save(const char* file);
 
 void image_open(const char* file, image_buffer* image);
 
+
 METHODDEF(void)
 my_error_exit (j_common_ptr cinfo)
 {

@@ -4,6 +4,7 @@
 #include "vec4.h"
 #include "image.h"
 
+#include "image.h"
 #ifdef __APPLE__
 	#include <GLUT/glut.h>
 	#include <OpenGL/gl.h>
@@ -34,6 +35,8 @@ typedef struct mesh_data{
 	int color_index_offset;
 	int b_has_texture;
 	int texture_index_offset;
+	int texture_unit;
+	int sampler;
 	unsigned int* mesh_offsets;
 	unsigned int num_meshes;
 	unsigned int num_vertices;

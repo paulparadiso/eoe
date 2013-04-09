@@ -24,11 +24,17 @@ void node3d_free(node3d* node){
 void node3d_load(node3d* node, void* data, int data_type){}
 
 void node3d_load_texture(node3d* node, image_buffer* img, int offset){
-	glGetTextures(1, &node->mesh->texture);
+	glGenTextures(1, &node->mesh->texture);
 	glBindTexture(GL_TEXTURE_2D, node->mesh->texture);
-	glTexImage2D(GL_TEXTURE_2D, 0, 3, img->width, img->height, 0, GL_RGB, GL_UNSIGNED_BYTE, image->pixels);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX, GL_LINEAR);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, img->width, img->height, 0, GL_RGB, GL_UNSIGNED_BYTE, img->pixels);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN, GL_LINEAR);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX, GL_LINEAR);
+	glBindTexture(GL_TEXTURE_2D, 0);
+	glGenSamplers(1, &node->mesh->sampler);
+	glSamplerParameteri(node->mesh->sampler, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glSamplerParameteri(node->mesh->sampler, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glSamplerParameteri(node->mesh->sampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glSamplerParameteri(node->mesh->sampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	node->mesh->b_has_texture = 1;
 	node->mesh->texture_index_offset = offset;
 }
@@ -53,14 +59,18 @@ void node3d_gen_vao(node3d* node){
 
 		glBindBuffer(GL_ARRAY_BUFFER, node->mesh->vertex_buffer_object);
 		
-		int buffer_size = node->mesh->num_vertices * sizeof(float) * (1 + node->mesh->b_has_vertex_colors);
+		/*
+		If node->mesh->b_has_vertex_color == 1 buffer size will be double.
+		*/
+		
+		int buffer_size = node->mesh->num_vertices * sizeof(GLfloat) * (1 + node->mesh->b_has_vertex_colors);
 
 		glBufferData(GL_ARRAY_BUFFER, buffer_size, node->mesh->vertex_data, GL_STATIC_DRAW);
 		//glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 		glGenBuffers(1, &node->mesh->index_buffer_object);
 
-		printf("index buffer = %i, size = %i\n", node->mesh->index_buffer_object, sizeof(node->mesh->index_data));
+		printf("index buffer = %i, size = %i\n", node->mesh->index_buffer_object, buffer_size);
 		
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, node->mesh->index_buffer_object);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, node->mesh->num_indeces * sizeof(GLushort), node->mesh->index_data, GL_STATIC_DRAW);
@@ -72,12 +82,12 @@ void node3d_gen_vao(node3d* node){
 
 		if(node->mesh->b_has_vertex_colors){
 			glEnableVertexAttribArray(1);
-			glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)(node->mesh->num_vertices / 2));		
+			glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)(buffer_size / 2));		
 		}
 
-		if(node->mesh->b_has_texture){
+		//if(node->mesh->b_has_texture){
 
-		}
+		//}
 		//int color_offset = node->mesh->num_vertices / 2 * sizeof(float);
 
 		//glBindBuffer(GL_ARRAY_BUFFER, node->mesh->vertex_buffer_object);
@@ -150,7 +160,16 @@ void node3d_gen_vbo(node3d* node, float* vertices, int* indeces, int i_count, in
 void node3d_draw(node3d* node){
 	if(node->mesh->b_indexed_draw){
 		glBindVertexArray(node->mesh->vao);
+		if(node->mesh->b_has_texture){
+			glActiveTexture(GL_TEXTURE0 + 0);
+			glBindTexture(GL_TEXTURE_2D, node->mesh->texture);
+			glBindSampler(0, node->mesh->sampler);
+		}
 		glDrawElements(GL_TRIANGLES, node->mesh->num_indeces, GL_UNSIGNED_SHORT, NULL);
+		if(node->mesh->b_has_texture){
+			glBindTexture(GL_TEXTURE_2D, 0);
+			glBindSampler(0, node->mesh->sampler);
+		}
 		glBindVertexArray(0);
 	} else {
 		glBindVertexArray(node->mesh->vao);

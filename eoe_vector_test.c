@@ -61,6 +61,8 @@ node3d* goblin;
 
 node3d* cube;
 
+node3d* plane;
+
 image_buffer image;
 
 const float vertex_positions[] = {
@@ -180,8 +182,19 @@ const GLfloat cube_vertex_positions[] = {
 	/*4*/  0.0,  1.0,  1.0, // color
 	/*5*/  1.0,  0.0,  1.0, // color
 	/*6*/  1.0,  1.0,  1.0, // color
-	/*7*/  0.0,  0.0,  0.0, // color
+	/*7*/  1.0,  0.0,  0.0, // color
 };
+
+const GLfloat plane_vertex_positions[] = {
+	-0.5, 0.5, -0.5,
+	 0.5, 0.5, -0.5,
+	 0.5, 0.5,  0.5,
+	-0.5, 0.5, 	0.5,
+	 -0.5, 0.5, -0.5,
+	 0.5, 0.5, -0.5,
+	 0.5, 0.5,  0.5,
+	-0.5, 0.5, 	0.5,
+};	
 
 const GLfloat cube_vertex_positions2[] = {
 	-1.0, -1.0,  1.0,
@@ -211,7 +224,7 @@ const int cube_index_data2[] = {
 };
 */
 
-const int cube_index_data[] = {
+const GLshort cube_index_data[] = {
 	0, 1, 2,
 	2, 3, 0,
 	0, 3, 4,
@@ -224,6 +237,11 @@ const int cube_index_data[] = {
 	4, 5, 1,
 	4, 5, 6,
 	6, 7, 4	
+};
+
+const GLshort plane_index_data[] = {
+	0, 1, 2,
+	2, 3, 0,
 };
 
 const GLushort cube_index_data2[] = {
@@ -406,7 +424,22 @@ void init(){
 	cube->mesh->num_vertices = 24;
 	cube->mesh->num_indeces = nci;
 
+	plane = node3d_create();
+	plane->mesh->vertex_data = plane_vertex_positions;
+	plane->mesh->index_data = plane_index_data;
+	plane->mesh->draw_mode = GL_TRIANGLES;
+	plane->mesh->b_indexed_draw = 1;
+	plane->mesh->b_has_vertex_colors = 1;
+	plane->mesh->num_vertices = 12;
+	plane->mesh->num_indeces = 6;
+	glUseProgram(blob->program);
+	plane->mesh->texture_unit = glGetUniformLocation(blob->program, "gaussianTexture");
+	glUniform1i(plane->mesh->texture_unit, 0);
+	glUseProgram(0);
+	node3d_load_texture(plane, &image, 0);
+
 	node3d_gen_vao(cube);	
+	node3d_gen_vao(plane);
 	//node3d_gen_vbo(cube, cube_vertex_positions, cube_index_data2, nci, 3);
 	/*
 
@@ -513,7 +546,8 @@ void display(){
 	//glUniformMatrix4fv(rotation_matrix_location, 1, GL_FALSE, rot_mat);
 
 	//node3d_draw(goblin);
-	node3d_draw(cube);
+	//node3d_draw(cube);
+	node3d_draw(plane);
 	GLenum gl_error = glGetError();
 	if(gl_error > 0){
 		printf("GL error = %i\n", gl_error);
@@ -545,8 +579,8 @@ void reshape (int w, int h)
 	mat4_set_member(0, 'x', frustum_scale / (w / (float)h), perspective_matrix);
 	mat4_set_member(1, 'y', frustum_scale, perspective_matrix);
 
-	//perspective_matrix[0] = frustum_scale / (w / (float)h);
-	//perspective_matrix[5] = frustum_scale;
+	perspective_matrix[0] = frustum_scale / (w / (float)h);
+	perspective_matrix[5] = frustum_scale;
 
 	glUseProgram(blob->program);
 	glUniformMatrix4fv(perspective_matrix_location, 1, GL_FALSE, perspective_matrix);
