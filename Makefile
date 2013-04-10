@@ -13,7 +13,7 @@ INCLUDES = -I/usr/include/GL
 
 osx: vec_OSX glsl_OSX node_OSX model_loader_OSX app_OSX 
 
-linux: vec_LINUX glsl_LINUX node_LINUX model_loader_LINUX app_LINUX
+linux: vec_LINUX glsl_LINUX node_LINUX model_loader_LINUX image_LINUX app_LINUX
 
 clean:
 	rm $(OBJECTS) vec_test

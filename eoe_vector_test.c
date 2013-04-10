@@ -26,7 +26,7 @@
 #define SCROLL_DOWN 4
 #define Z_MAX 10.0
 #define Z_MIN -200.0
-#define Z_DELTA 0.01
+#define Z_DELTA 0.1
 
 void compute_offsets(float * _offsets);
 float calc_frustum_scale(float fov_deg);
@@ -190,10 +190,10 @@ const GLfloat plane_vertex_positions[] = {
 	 0.5, 0.5, -0.5,
 	 0.5, 0.5,  0.5,
 	-0.5, 0.5, 	0.5,
-	 -0.5, 0.5, -0.5,
-	 0.5, 0.5, -0.5,
-	 0.5, 0.5,  0.5,
-	-0.5, 0.5, 	0.5,
+	 1.0, 0.0,
+	 0.0, 0.0,
+	 0.0, 1.0,
+	 1.0, 1.0,
 };	
 
 const GLfloat cube_vertex_positions2[] = {
@@ -347,6 +347,7 @@ void initialize_vertex_buffer(){
 }
 
 void init(){
+
 	/* set clear color to black */ 
 	//glClearColor (0.0, 0.0, 0.0, 0.0);
 
@@ -413,7 +414,12 @@ void init(){
 
 	printf("OpenGL version - %s\n", glGetString(GL_VERSION));
 
-	image_open("../images/8610413449_693cf0505d_m.jpg", &image);
+	image_open("../images/8610744392_2f5ea437b2_m.jpg", &image);
+	printf("opened image - width = %d, height = %d\n", image.width, image.height);
+	printf("image - %u - %u - %u - %u\n", (unsigned char)image.pixels[0], 
+										  (unsigned char)image.pixels[1], 
+										  (unsigned char)image.pixels[2], 
+										  (unsigned char)image.pixels[3]);
 
 	cube = node3d_create();
 	cube->mesh->vertex_data = cube_vertex_positions;
@@ -433,10 +439,17 @@ void init(){
 	plane->mesh->num_vertices = 12;
 	plane->mesh->num_indeces = 6;
 	glUseProgram(blob->program);
-	plane->mesh->texture_unit = glGetUniformLocation(blob->program, "gaussianTexture");
+	plane->mesh->texture_unit = 0;
+	plane->mesh->texture_unit = glGetUniformLocation(blob->program, "color_texture");
+	printf("texture uniform = %i\n", plane->mesh->texture_unit);
 	glUniform1i(plane->mesh->texture_unit, 0);
 	glUseProgram(0);
 	node3d_load_texture(plane, &image, 0);
+
+	GLenum gl_error = glGetError();
+	if(gl_error > 0){
+		printf("GL error = %i\n", gl_error);
+	}
 
 	node3d_gen_vao(cube);	
 	node3d_gen_vao(plane);
@@ -517,7 +530,7 @@ void display(){
 
 	//glBindVertexArray(vao1);
 
-	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+	glClearColor(1.0f, 0.0f, 0.0f, 0.0f);
 	glClearDepth(1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -531,7 +544,7 @@ void display(){
 		rot = 0.0;
 	}
 
-	mat4* rot_mat = mat4_from_rotation(0.0,1.0,0.0,rot);
+	mat4* rot_mat = mat4_from_rotation(1.0,0.0,0.0,90.0);
 	//mat4* rot_mat = create_id_mat4();
 	vec4d vec1 = {.x = offsets[0], 
 				   	  .y = offsets[1], 
@@ -548,10 +561,12 @@ void display(){
 	//node3d_draw(goblin);
 	//node3d_draw(cube);
 	node3d_draw(plane);
+	/*
 	GLenum gl_error = glGetError();
 	if(gl_error > 0){
 		printf("GL error = %i\n", gl_error);
 	}
+	*/
 
 	mat4_free(rot_mat);
 

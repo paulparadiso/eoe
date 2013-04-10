@@ -27,14 +27,18 @@ void node3d_load_texture(node3d* node, image_buffer* img, int offset){
 	glGenTextures(1, &node->mesh->texture);
 	glBindTexture(GL_TEXTURE_2D, node->mesh->texture);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, img->width, img->height, 0, GL_RGB, GL_UNSIGNED_BYTE, img->pixels);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN, GL_LINEAR);
 	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX, GL_LINEAR);
 	glBindTexture(GL_TEXTURE_2D, 0);
+	/*
 	glGenSamplers(1, &node->mesh->sampler);
 	glSamplerParameteri(node->mesh->sampler, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glSamplerParameteri(node->mesh->sampler, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glSamplerParameteri(node->mesh->sampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glSamplerParameteri(node->mesh->sampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	*/
 	node->mesh->b_has_texture = 1;
 	node->mesh->texture_index_offset = offset;
 }
@@ -63,7 +67,9 @@ void node3d_gen_vao(node3d* node){
 		If node->mesh->b_has_vertex_color == 1 buffer size will be double.
 		*/
 		
-		int buffer_size = node->mesh->num_vertices * sizeof(GLfloat) * (1 + node->mesh->b_has_vertex_colors);
+		//int buffer_size = node->mesh->num_vertices * sizeof(GLfloat) * (1 + node->mesh->b_has_vertex_colors);
+
+		int buffer_size = sizeof(GLfloat) * 20;
 
 		glBufferData(GL_ARRAY_BUFFER, buffer_size, node->mesh->vertex_data, GL_STATIC_DRAW);
 		//glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -82,7 +88,7 @@ void node3d_gen_vao(node3d* node){
 
 		if(node->mesh->b_has_vertex_colors){
 			glEnableVertexAttribArray(1);
-			glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)(buffer_size / 2));		
+			glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (void*)(12 * sizeof(GLfloat)));		
 		}
 
 		//if(node->mesh->b_has_texture){
@@ -161,14 +167,13 @@ void node3d_draw(node3d* node){
 	if(node->mesh->b_indexed_draw){
 		glBindVertexArray(node->mesh->vao);
 		if(node->mesh->b_has_texture){
-			glActiveTexture(GL_TEXTURE0 + 0);
+			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_2D, node->mesh->texture);
-			glBindSampler(0, node->mesh->sampler);
+			//glBindSampler(0, node->mesh->sampler);
 		}
 		glDrawElements(GL_TRIANGLES, node->mesh->num_indeces, GL_UNSIGNED_SHORT, NULL);
 		if(node->mesh->b_has_texture){
 			glBindTexture(GL_TEXTURE_2D, 0);
-			glBindSampler(0, node->mesh->sampler);
 		}
 		glBindVertexArray(0);
 	} else {

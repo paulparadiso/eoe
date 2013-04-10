@@ -1,8 +1,11 @@
 #include "image.h"
 
 void image_open(const char* file, image_buffer* image){
+	printf("loading image - %s\n", file);
+
 	struct jpeg_decompress_struct cinfo;
 	struct my_error_mgr jerr;
+
 
 	FILE* in_file;
 	JSAMPARRAY buffer;
@@ -19,6 +22,7 @@ void image_open(const char* file, image_buffer* image){
     /* If we get here, the JPEG code has signaled an error.
      * We need to clean up the JPEG object, close the input file, and return.
      */
+     	printf("jpeg error\n");
      	jpeg_destroy_decompress(&cinfo);
     	fclose(in_file);
     	return;
@@ -44,11 +48,18 @@ void image_open(const char* file, image_buffer* image){
 
 	int counter = 0;
 
+	JSAMPROW b_ptr = image->pixels;
+
 	while (cinfo.output_scanline < cinfo.output_height) {
-    	(void) jpeg_read_scanlines(&cinfo, buffer, 1);
+    	(void) jpeg_read_scanlines(&cinfo, &b_ptr, 1);
 		//put_scanline_someplace(buffer[0], row_stride);
-		memcpy(image->pixels, buffer[0], row_stride);	
+		//printf("scanline = %d\n", cinfo.output_scanline);
+		//memcpy(b_ptr, buffer[0], row_stride);	
+		b_ptr += row_stride;
 	}
+
+	//printf("setting chars to 255.\n");
+	//memset(image->pixels, 255, image->width * image->height * image->depth);
 
 	(void) jpeg_finish_decompress(&cinfo);
 
