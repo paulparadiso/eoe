@@ -18,13 +18,14 @@ void vertex_list_exp(vertex_list* vl){
 void vertex_list_exp_with_primitive(vertex_list* vl, int type; int size; void* data);
 
 void vertex_list_add_primitive(vertex_list* vl, int type; int size; void* data){
-	if(vl->tail->this == NULL){
-		vl->tail->this = malloc(sizeof(vertex))
-		vl->tail->this->this = malloc(sizeof(vertex_primitive));
+	if(vl->tail->v == NULL){
+		vl->tail->v = malloc(sizeof(vertex))
 	}
-	if(vl->tail->this->this == NULL){
-		vl->tail->this->this = malloc(sizeof(vertex_primitive));
-	}
+	vertex_add_primitive(vl->tail->v, type, size, data);
+}
+
+void vertex_add_primitive(vertex* v, int type, int size, void* data){
+	if(v->vp == NULL){}
 }
 
 void vertex_list_reset(vertex_list *vl);
