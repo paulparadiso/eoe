@@ -1,15 +1,15 @@
-var WIDTH = 400,
-	HEIGHT = 300;
+var WIDTH = window.innerWidth,
+	HEIGHT = window.innerHeight;
 
 var VIEW_ANGLE = 45,
 	ASPECT = WIDTH / HEIGHT,
 	NEAR = 0.1,
 	FAR = 10000;
 
-var container = $('#container');
-var renderer = new THREE.WebGLRenderer();
-var camera = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
-var scene = new THREE.Scene();
+var container;
+var renderer = null;
+var camera;
+var scene; 
 
 var sphereRadius = 50,
 	sphereSegments = 16,
@@ -28,15 +28,23 @@ var pointLight;
 
 var images = [];
 
+var zTranslate = 0.0;
+var it = null;
+
 function init(){ 
+	container = $('#container');
+	renderer = new THREE.WebGLRenderer();
+	renderer.autoClear = true;
+	camera = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
 	camera.position.z = 300;
+	scene = new THREE.Scene();
 	scene.add(camera);
 
 	renderer.setSize(WIDTH, HEIGHT);
-
 	container.append(renderer.domElement);
 
 	material = new THREE.MeshLambertMaterial({color: 0xCC0000});
+
 	/*
 	material = new THREE.MeshLambertMaterial({
 		map: THREE.ImageUtils.loadTexture(
@@ -51,7 +59,7 @@ function init(){
 			 	sphereRings),
 			 material);
 
-	scene.add(sphere);
+	//scene.add(sphere);
 
 	plane = new THREE.Mesh(
 			new THREE.PlaneGeometry(
@@ -75,25 +83,44 @@ function init(){
 	/*
 	var textureImg = new Image();
 	textureImg.onload = function(){
+		console.log("image loaded");
 		renderer.render(scene, camera);
 	};
 	textureImg.src = "static/img/dl/8610062699_c2c67c7fb1_m.jpg";
 	*/
 
 	it = new ImageTexture("static/img/dl/8610062699_c2c67c7fb1_m.jpg", scene);
+	//renderer.render(scene, camera);
 }
 
 animate();
 
-function animate(){
+function animate(t){
 	requestAnimationFrame(animate);
-	draw();
+	draw(t);
 }
 
-function draw(){
+function draw(t){
+	//console.log(t);
 	//console.log("drawing");
-	renderer.clear();
-	renderer.render(scene, camera);
+	//renderer.clear();
+	if(renderer != null){
+		renderer.render(scene, camera);
+	}
+	if(it != null){
+		if(it.bLoaded){
+			//console.log("translating z");
+			//it.plane.translateZ(zTranslate);
+			//zTranslate -= 1.0;
+			//console.log(zTranslate);
+			//if(zTranslate < -100.0){
+			//	zTranslate = 0.0;
+			//}
+			it.setScale(0.1);
+			it.plane.rotation.x = Math.sin(t / 1000.0);
+			it.plane.rotation.y = Math.sin(t / 800.0);
+		}
+	}
 }
 
 (function() {

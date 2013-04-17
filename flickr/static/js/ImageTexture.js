@@ -1,34 +1,46 @@
 function ImageTexture(path, scene){
-	var path = path;
-	var img = new Image();
-	var width  = 0;
-	var hwight = 0;
-	var plane = null;
-	var material = null;
-	var bLoaded = false;
+	
+	var self = this;
+
+	this.path = path;
+	this.img = new Image();
+	this.width  = 0;
+	this.height = 0;
+	this.plane = null;
+	this.material = null;
+	this.bLoaded = false;
+	
 	this.add = function(scene){
 		scene.add(plane);
 	}
+
 	this.remove = function(scene){
 		scene.remove(this.plane);
 	}
-	img.onload = function(){
-		width = img.width;
-		height = img.height;
-		material = new THREE.MeshLambertMaterial({
+
+	this.setScale = function(scale){
+		self.plane.scale.x = scale;
+		self.plane.scale.y = scale;
+		self.plane.scale.z = scale;
+	}
+
+	this.img.onload = function(){
+		self.width = self.img.width;
+		self.height = self.img.height;
+		self.material = new THREE.MeshLambertMaterial({
 			map: THREE.ImageUtils.loadTexture(path)
 		});
-		plane = new THREE.Mesh(
+		self.plane = new THREE.Mesh(
 			new THREE.PlaneGeometry(
-				width,
-				height,
+				self.width,
+				self.height,
 				1,
 				1
 				),
-			material);
-		scene.add(plane);
+			self.material);
+		scene.add(self.plane);
 		console.log("loaded texture - " + path);
-		bLoaded = true;
+		self.bLoaded = true;
 	}
-	img.src = path;
+	this.img.src = path;
 }
