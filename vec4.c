@@ -171,3 +171,172 @@ mat4* mat4_from_rotation(float x, float y, float z, float angle){
 	mat4_set_member(2, 'z',  t * pow(z, 2) + c, rot_mat);
 	return rot_mat;
 }
+
+quat* quat_create(){
+	quat* q = malloc(sizeof(quat));
+	quat_set_angle(q, 0.0);
+	quat_set_axis(q, 0.0,0.0,0.0);
+	return q;
+}
+
+quat* quat_create_id(){
+	quat* q = quat_create();
+	quat_set_angle(q, 1.0);
+	return q;
+}
+
+void quat_print(quat* q){
+	printf("-----QUATERNION----------\n");
+	printf("\tangle = %f, x = %f, y = %f, z = %f\n", q->angle, q->axis.x, q->axis.y, q->axis.z);
+}
+
+void quat_free(quat* q){
+	free(q);
+}
+
+void quat_set_angle(quat* q, float angle){
+	q->angle = angle;
+}
+
+float quat_get_angle(quat* q){
+	return q->angle;
+}
+
+void quat_set_axis(quat* q, float x, float y, float z){
+	q->axis.x = x;
+	q->axis.y = y;
+	q->axis.z = z;
+}
+
+void quat_set_axis_from_vec(quat* q, vec4d* v){
+	q->axis = *v;
+}
+
+vec4d quat_get_axis(quat* q){
+	return q->axis;
+}
+
+void quat_rotate_x(quat* q, float angle){
+	float half_angle = angle * 0.5;
+	q->angle = cos(half_angle);
+	q->axis.x = sin(half_angle);
+	q->axis.y = 0.0;
+	q->axis.z = 0.0;
+}
+
+void quat_rotate_y(quat* q, float angle){
+	float half_angle = angle * 0.5;
+	q->angle = cos(half_angle);
+	q->axis.x = 0.0;
+	q->axis.y = sin(half_angle);
+	q->axis.z = 0.0;
+}
+void quat_rotate_z(quat* q, float angle){
+	float half_angle = angle * 0.5;
+	q->angle = cos(half_angle);
+	q->axis.x = 0.0;
+	q->axis.y = 0.0;
+	q->axis.z = sin(half_angle);
+}
+
+void quat_rotate_axis(quat* q, float angle, vec4d* axis){
+	if(fabs(vec4d_mag(axis) - 1.0) > 0.1){
+		vec4d_norm(axis, axis);
+	}
+	
+	float half_angle = angle * 0.5;
+	float sin_half_angle = sin(half_angle);
+
+	q->angle = cos(half_angle);
+	q->axis.x = axis->x * sin_half_angle;
+	q->axis.y = axis->y * sin_half_angle;
+	q->axis.z = axis->z * sin_half_angle;
+}
+
+float quat_dot(quat* q, quat* p){
+	return q->angle * p->angle + q->axis.x * p->axis.x + q->axis.y * p->axis.y + q->axis.z * p->axis.z;
+}
+
+void quat_cross(quat* q, quat* p, quat* out){
+	out->angle = q->angle  * p->angle - q->axis.x * p->axis.x - q->axis.y * p->axis.y - q->axis.z * p->axis.z;
+	out->axis.x = q->angle * p->axis.x + q->axis.x * p->angle + q->axis.z * p->axis.y - q->axis.y * p->axis.z;
+	out->axis.y = q->angle * p->axis.y + q->axis.y * p->angle + q->axis.x * p->axis.z - q->axis.z * p->axis.x;
+	out->axis.z = q->angle * p->axis.z + q->axis.z * p->angle + q->axis.y * p->axis.x - q->axis.x * p->axis.y;
+}
+
+void quat_normalize(quat* q, quat* out){
+	float mag = sqrt(pow(q->angle, 2) + pow(q->axis.x, 2) + pow(q->axis.y, 2) + pow(q->axis.z, 2));
+
+	if(mag > 0.0){
+		float one_over_mag = 1.0 / mag;
+		out->angle = q->angle * one_over_mag;
+		out->axis.x = q->axis.x * one_over_mag;
+		out->axis.y = q->axis.y * one_over_mag;
+		out->axis.z = q->axis.z * one_over_mag;
+	} else {
+		quat_free(out);
+		out = quat_create_id();
+	}
+}
+
+void quat_conjugate(quat* q, quat* out){
+	out->angle = q->angle;
+	out->axis.x = -q->axis.x;
+	out->axis.y = -q->axis.y;
+	out->axis.z = -q->axis.z;
+}
+
+void quat_pow(quat* q, float exp, quat* out){
+	if(q->angle > 0.9999){
+		quat_free(out);
+		out = quat_create_id();
+		return;
+	} else {
+		float alpha = acos(q->angle);
+		float new_alpha = alpha * exp;
+		out->axis.x = cos(new_alpha);
+		float mult = sin(new_alpha) / sin(alpha);
+		out->axis.x = q->axis.x * mult;
+		out->axis.y = q->axis.y * mult;
+		out->axis.z = q->axis.z * mult;
+	}
+}
+
+void quat_slerp(quat* q, quat* p, quat* out, float t){
+	if(t <= 0.0){
+		*out = *q;
+		return;
+	}
+	if(t >= 1.0){
+		*out = *q;
+		return;
+	}
+	float cos_omega = quat_dot(q, p);
+	float qa = q->angle;
+	float qx = q->axis.x;
+	float qy = q->axis.y;
+	float qz = q->axis.z;
+	if(cos_omega){
+		qa = -qa;
+		qx = -qx;
+		qy = -qy;
+		qz = -qz;
+		cos_omega = -cos_omega;
+	}
+
+	float k0, k1;
+	if(cos_omega > 0.9999){
+		k0 = 1.0 - t;
+		k1 = t;
+	} else {
+		float sin_omega = sqrt(1.0 - pow(cos_omega, 2));
+		float omega = atan2(sin_omega, cos_omega);
+		float one_over_sin_omega = 1.0 / sin_omega;
+		k0 = sin((1.0 - t) * omega) * one_over_sin_omega;
+		k1 = sin(t * omega) * one_over_sin_omega;
+	}
+	out->axis.x = k0 * q->axis.x + k1 * qx;
+	out->axis.y = k0 * q->axis.y + k1 * qy;
+	out->axis.z = k0 * q->axis.z + k1 * qz;
+	out->angle = k0 * q->angle + k1 * qa;
+}

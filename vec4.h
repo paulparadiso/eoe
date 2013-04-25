@@ -22,6 +22,11 @@ typedef struct vec4d{
 
 typedef float mat4;
 
+typedef struct quat{
+	float angle;
+	vec4d axis;
+} quat;
+
 /*
 Print a vector's values.
 */
@@ -148,5 +153,84 @@ Rotation matrix.
 */
 
 mat4* mat4_from_rotation(float x, float y, float z, float angle);
+
+/*
+Create a blank quaternion.
+*/
+
+
+quat* quat_create();
+
+/*
+print.
+*/
+
+void quat_print(quat* q);
+
+/*
+Free.
+*/
+
+void quat_free(quat* q);
+
+/*
+Create an identity quaternion.
+*/
+
+quat* quat_create_id();
+
+/*
+Set and get quaternion angle.
+*/
+
+void quat_set_angle(quat* q, float angle);
+float quat_get_angle(quat* q);
+
+/*
+Set and get Quaternion axis.
+*/
+
+void quat_set_axis(quat* q, float x, float y, float z);
+vec4d quat_get_axis(quat* q);
+
+/*
+Rotation functions.
+*/
+
+void quat_rotate_x(quat* q, float angle);
+void quat_rotate_y(quat* q, float angle);
+void quat_rotate_z(quat* q, float angle);
+void quat_rotate_axis(quat* q, float angle, vec4d* axis);
+
+/*
+Products.
+*/
+
+float quat_dot(quat* q, quat* p);
+void quat_cross(quat* q, quat* p, quat* out);
+
+/*
+Normalize.
+*/
+
+void quat_normalize(quat* q, quat* out);
+
+/*
+Conjugate.
+*/
+
+void quat_conjugate(quat* q, quat* out);
+
+/*
+Exponential.
+*/
+
+void quat_pow(quat* q, float exp, quat* out);
+
+/*
+Slerp.
+*/
+
+void quat_slerp(quat* q, quat* p, quat* out, float t);
 
 #endif
