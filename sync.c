@@ -48,6 +48,16 @@ int get_file(CURL* curl, char* url, curl_buffer* buf){
 	return res;
 }
 
+int file_exists(char* path){
+	struct stat buf;
+	int i = stat(path, &buf);
+	if(i == 0){
+		return 1;
+	} else {
+		return 0;
+	}
+}
+
 void extract_file_name(char* url, char* name){
 	printf("extracting %s\n", url);
 	char domain[256];
@@ -116,15 +126,18 @@ int main(int argc, char** argv){
 					curl_buffer tmp_buffer;
 					tmp_buffer.buffer = malloc(1);
 					tmp_buffer.size = 0;
-					printf("downloading file - %i.\n", i);
+					char* file_name = calloc(256,1);
+					extract_file_name(img_list[i], file_name);
+					//printf("extracted file name - %s\n", file_name);
+					char path[256] = "../images/";
+					strcat(path, file_name);
+					if(file_exists(path)){
+						continue;
+					}
+					printf("downloading file - %i/%i.\n", i, len);
 					res = get_file(curl, img_list[i], &tmp_buffer);
 					printf("download result = %i.\n", res);
 					if(res == CURLE_OK){
-						char* file_name = calloc(256,1);
-						extract_file_name(img_list[i], file_name);
-						//printf("extracted file name - %s\n", file_name);
-						char path[256] = "../images/";
-						strcat(path, file_name);
 						printf("Path = %s\n", path);
 						write_data_to_file(path, &tmp_buffer);
 						free(tmp_buffer.buffer);

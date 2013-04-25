@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <sys/stat.h>
 #include <curl/curl.h>
 #include <json/json.h>
 
@@ -44,5 +45,11 @@ is the address of a char** array of strings.
 */
 
 int json_to_strings(curl_buffer* data, char*** url_list);
+
+/*
+Test whether a file already exists.
+*/
+
+int file_exists(char* path);
 
 #endif
