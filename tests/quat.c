@@ -10,7 +10,7 @@ void test_set_angle(){
 	}
 }
 
-void test_set_axis(quat *q){
+void test_set_axis(){
 	quat* q = quat_create();
 	float i;
 	for(i = 0.0; i < 100.0; i += 0.98){
@@ -23,17 +23,61 @@ void test_set_axis(quat *q){
 	}
 }
 
-void test_rotate_x(quat* q){}
+void test_rotate_x(){
+	quat* q = quat_create();
+	float i;
+	for(i = 0.0; i < 100.0; i += 0.98){
+		quat_rotate_x(q, i);
+		quat_print(q);
+	}
+	quat_free(q);
+}
 
-void test_rotate_y(quat* q){}
+void test_rotate_y(){
+	quat* q = quat_create();
+	float i;
+	for(i = 0.0; i < 100.0; i += 0.98){
+		quat_rotate_y(q, i);
+		quat_print(q);
+	}
+	quat_free(q);
+}
 
-void test_rotate_z(quat* q){}
+void test_rotate_z(){
+	quat* q = quat_create();
+	float i;
+	for(i = 0.0; i < 100.0; i += 0.98){
+		quat_rotate_z(q, i);
+		quat_print(q);
+	}
+	quat_free(q);
+}
 
-void test_rotate_axis(quat *q){}
+void test_rotate_axis(){
+	quat* q = quat_create();
+	vec4d v = {
+		.x = 2.31,
+		.y = 1.42,
+		.z = 0.44
+	};
+	float i;
+	for(i = 0.0; i < 100.0; i += 0.98){
+		quat_rotate_axis(q, i, &v);
+		quat_print(q);
+	}
+	quat_free(q);
+}
 
-void test_dot(quat *q, quat* p){}
+void test_dot(quat *q, quat* p){
+	float d = quat_dot(q,p);
+	printf("Dot = %f\n", d);
+}
 
-void test_cross(quat *q, quat*p){}
+void test_cross(quat* q, quat* p){
+	quat* o = quat_create();
+	quat_cross(q,p,o);
+	quat_print(o);
+}
 
 void test_norm(quat* q){}
 
@@ -57,13 +101,13 @@ int main(int* argc, char** argv){
 	quat_print(q2);
 
 	//test_set_angle();
-	test_set_axis();
-	//test_rotate_x(quat* q);
-	//test_rotate_y(quat* q);
-	//test_rotate_z(quat* q);
-	//test_rotate_axis(quat *q);
-	//test_dot(quat *q, quat* p);
-	//test_cross(quat *q, quat*p);
+	//test_set_axis();
+	//test_rotate_x();
+	//test_rotate_y();
+	//test_rotate_z();
+	//test_rotate_axis();
+	//test_dot(q1, q2);
+	test_cross(q1, q2);
 	//test_norm(quat* q);
 	//test_con(quat* q);
 	//test_pow(quat* q);
