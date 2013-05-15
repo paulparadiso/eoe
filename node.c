@@ -43,7 +43,7 @@ void node3d_load_texture(node3d* node, image_buffer* img, int offset){
 	node->mesh->texture_index_offset = offset;
 }
 
-void node3d_gen_vao(node3d* node){
+void node3d_gen_vao(node3d* node){	
 	if(node->mesh->b_indexed_draw){
 		
 		/*

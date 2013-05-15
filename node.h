@@ -53,8 +53,6 @@ typedef struct node3d{
 	mat4* transform;
 } node3d;
 
-#endif
-
 /*
 Create a new node3d.
 */
@@ -97,3 +95,4 @@ Draw the model.
 
 void node3d_draw(node3d* node);
 
+#endif

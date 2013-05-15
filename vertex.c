@@ -1,33 +1,59 @@
 #include "vertex.h"
 
-vertex_list* vertex_list_create(){
-	vertex_list* p_vl = malloc(sizeof(vertex_list));
-	p_vl->head = malloc(sizeof(vertex_list_element));
-	p_vl->head->this = NULL;
-	p_vl->head->next = NULL;
-	p_vl->tail = p_vl->current = p_vl->head;
+vertex* vertex_create(){
+	vertex* v = malloc(sizeof(vertex));
+	v->p.x = 0.0;
+	v->p.y = 0.0;
+	v->p.z = 0.0;
+	v->p.w = 1.0;
+	v->c.r = 1.0;
+	v->c.g = 1.0;
+	v->c.b = 1.0;
+	v->c.a = 1.0;
+	v->t.u = 0.0;
+	v->t.v = 0.0;
+	return v;
 }
 
-void vertex_list_exp(vertex_list* vl){
-	vl->tail->next = malloc(sizeof(vertex_list_element));
-	vl->tail = vl->tail->next;
-	vl->tail->this = NULL;
-	vl->tail->this = NULL;
-}
-
-void vertex_list_exp_with_primitive(vertex_list* vl, int type; int size; void* data);
-
-void vertex_list_add_primitive(vertex_list* vl, int type; int size; void* data){
-	if(vl->tail->v == NULL){
-		vl->tail->v = malloc(sizeof(vertex))
+void vertex_set_position(vertex* v, int num_elements, float* p){
+	if(num_elements > 0){
+		v->p.x = p[0];
 	}
-	vertex_add_primitive(vl->tail->v, type, size, data);
+	if(num_elements > 1){
+		v->p.y = p[1];
+	}
+	if(num_elements > 2){
+		v->p.z = p[2];
+	}
+	if(num_elements > 3){
+		v->p.w = p[3];
+	}
 }
 
-void vertex_add_primitive(vertex* v, int type, int size, void* data){
-	if(v->vp == NULL){}
+void vertex_set_color(vertex* v, int num_elements, float* c){
+	if(num_elements > 0){
+		v->c.r = c[0];
+	}
+	if(num_elements > 1){
+		v->c.g = c[1];
+	}
+	if(num_elements > 2){
+		v->c.b = c[2];
+	}
+	if(num_elements > 3){
+		v->c.a = c[3];
+	}
 }
 
-void vertex_list_reset(vertex_list *vl);
+void vertex_set_tex_coords(vertex* v, int num_elements, float *t){
+	if(num_elements > 0){
+		v->t.u = t[0];
+	}
+	if(num_elements > 1){
+		v->t.v = t[1];
+	}
+}
 
-int vertex_list_advance(vertex_list *vl);
+void vertex_free(vertex* v){
+	free(v);
+}
